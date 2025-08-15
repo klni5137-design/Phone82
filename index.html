@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>요금계산기ver2.8</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!-- html2canvas 라이브러리 추가 -->
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+    body { font-family: "Inter", sans-serif; background: #f5f7fa; padding: 20px; }
+    .container { background: #fff; padding: 30px; border-radius: 12px; max-width: 1100px; margin: auto; box-shadow: 0 6px 20px rgba(0,0,0,0.08); position: relative; }
+    h1, h2 { text-align: center; color: #1a73e8; }
+    .main-content { display: flex; gap: 30px; flex-wrap: wrap; }
+    .section { flex: 1; background: #fafafa; padding: 20px; border-radius: 8px; border: 1px solid #ddd; min-width: 300px; transition: opacity 0.3s ease; }
+    .section h3 { border-bottom: 2px solid #1a73e8; padding-bottom: 5px; }
+    .input-group { margin-bottom: 15px; }
+    .input-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+    .input-group input, .input-group select { width: 95%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; }
+    .checkbox-group { margin-top: 10px; display: flex; align-items: center; gap: 5px; }
+    .info-box { font-size: 0.9em; color: #555; background-color: #f0f0f0; padding: 10px; border-radius: 4px; line-height: 1.5; margin-top: 5px; }
+    .info-box-red { font-size: 0.9em; color: #d93025; padding-top: 5px; }
+    .error-message { color: #d93025; text-align: center; margin: 15px 0; font-weight: bold; min-height: 20px; }
+    .calc-button { width: 100%; padding: 15px; font-size: 1.2em; background: #1a73e8; color: #fff; border: none; border-radius: 5px; margin-top: 20px; cursor: pointer;}
+    .calc-button:hover { background: #155ab6; }
+    .result-section { margin-top: 30px; padding: 20px; background: #e8f0fe; border-radius: 8px; }
+    .monthly-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .monthly-table th, .monthly-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    .monthly-table th { background: #f2f2f2; }
+    .winner { font-size: 1.2em; font-weight: bold; color: #1e8e3e; margin-bottom: 15px; text-align: center;}
+    .plan-description-box { display: none; margin-top: 10px; padding: 15px; background-color: #fff; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em; line-height: 1.6; color: #333; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+    .comparison-toggle { text-align: center; margin: 20px 0; padding: 10px; background-color: #e9ecef; border-radius: 8px; }
+
+    /* 툴팁 아이콘 스타일 */
+    .tooltip-icon {
+        cursor: help; margin-left: 5px; font-weight: normal; color: #666; position: relative; display: inline-block;
+    }
+    .tooltip-text {
+        visibility: hidden; width: 250px; background-color: #555; color: #fff; text-align: center;
+        border-radius: 6px; padding: 8px; position: absolute; z-index: 1; bottom: 125%;
+        left: 50%; margin-left: -125px; opacity: 0; transition: opacity 0.3s;
+        font-size: 0.8em; line-height: 1.4; white-space: normal;
+    }
+    .tooltip-text::after {
+        content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+        border-width: 5px; border-style: solid; border-color: #555 transparent transparent transparent;
+    }
+    .tooltip-icon:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+    /* ★★★ 오른쪽 상단 버튼 컨테이너 ★★★ */
+    .top-right-buttons {
+        position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10;
+    }
+    .icon-button {
+        background: none; border: none; font-size: 2.2em; color: #6c757d; cursor: pointer;
+        transition: color 0.3s ease; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; padding: 5px; line-height: 1;
+    }
+    .icon-button:hover { color: #1a73e8; }
+    .icon-button span { font-size: 0.4em; margin-top: 2px; font-weight: normal; }
+
+
+    /* PC/Mobile 전용 버튼 스타일 */
+    .action-buttons {
+        position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 10;
+    }
+    .action-buttons button {
+        padding: 8px 15px; font-size: 0.9em; border-radius: 5px; border: 1px solid #1a73e8;
+        background-color: #1a73e8; color: #fff; cursor: pointer;
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+    .action-buttons button:hover { background-color: #155ab6; border-color: #155ab6; }
+    
+    /* 뷰 전환 버튼 스타일 */
+    .view-mode-buttons { text-align: center; margin-bottom: 20px; }
+    .view-mode-buttons button {
+        padding: 10px 20px; margin: 0 5px; border: 1px solid #1a73e8; border-radius: 5px;
+        background-color: #fff; color: #1a73e8; font-size: 1em; cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+    }
+    .view-mode-buttons button:hover, .view-mode-buttons button.active {
+        background-color: #1a73e8; color: #fff;
+    }
+    
+    /* ★★★ 모달 스타일 추가 ★★★ */
+    .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); z-index: 1000;
+    }
+    .modal-content {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        z-index: 1001; width: 90%; max-width: 700px; max-height: 80vh; overflow-y: auto;
+    }
+    .modal-close-button {
+        position: absolute; top: 15px; right: 15px; font-size: 1.8em;
+        font-weight: bold; color: #aaa; cursor: pointer;
+    }
+    .modal-content h2 { margin-top: 0; }
+    .modal-content h3 { color: #1a73e8; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 20px; }
+    .modal-content p, .modal-content li { line-height: 1.7; color: #333; }
+    .modal-content strong { color: #d93025; }
+    
+    /* ★★★ 날짜 계산기 모달 내부 스타일 ★★★ */
+    .date-calculator {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .date-calculator-section {
+        flex: 1;
+        min-width: 250px;
+        border: 1px solid #eee;
+        padding: 15px;
+        border-radius: 8px;
+    }
+    .date-calculator-section input {
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+    }
+    .date-calculator-section button {
+        width: 100%;
+        padding: 10px;
+        font-size: 1em;
+    }
+    .date-calculator-section .result {
+        margin-top: 15px;
+        font-weight: bold;
+        font-size: 1.1em;
+        color: #1a73e8;
+    }
+
+
+    /* ★★★ 푸터 스타일 추가 ★★★ */
+    .footer-container {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        font-size: 0.85em;
+        color: #888;
+    }
+    .footer-container p {
+        margin: 5px 0;
+    }
+    .footer-container a {
+        color: #1a73e8;
+        text-decoration: none;
+    }
+    .footer-container a:hover {
+        text-decoration: underline;
+    }
+
+    /* --- 모바일 뷰 강제 적용 CSS --- */
+    body.mobile-view .container { max-width: 100%; padding: 15px; box-sizing: border-box; }
+    body.mobile-view h1 { font-size: 1.5em; margin-top: 55px; } /* UI 수정: 상단 마진 증가 */
+    body.mobile-view .comparison-toggle label { display: block; margin-right: 0 !important; margin-bottom: 10px; font-size: 0.9em; }
+    body.mobile-view .main-content { flex-direction: column; gap: 15px; }
+    body.mobile-view .section { min-width: auto; width: 100%; padding: 15px; box-sizing: border-box; }
+    body.mobile-view .input-group input, body.mobile-view .input-group select { width: 100%; box-sizing: border-box; }
+    body.mobile-view .calc-button { font-size: 1.1em; padding: 12px; margin-top: 15px; margin-bottom: 15px; }
+    body.mobile-view .result-section { padding: 15px; }
+    .monthly-table-wrapper { width: 100%; overflow-x: hidden; }
+    body.mobile-view .monthly-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 10px; }
+    body.mobile-view .monthly-table { width: auto; }
+    body.mobile-view .monthly-table th, body.mobile-view .monthly-table td { padding: 6px 4px; font-size: 0.75em; white-space: nowrap; }
+    body.mobile-view .monthly-table th { white-space: normal; word-break: keep-all; min-width: 70px; }
+    body.mobile-view .tooltip-text { width: 140px; margin-left: -70px; left: 50%; bottom: 110%; font-size: 0.75em; }
+    
+    /* UI 수정: 모바일 버튼 크기 및 위치 조정 */
+    body.mobile-view .top-right-buttons { top: 15px; right: 10px; gap: 5px; }
+    body.mobile-view .icon-button { font-size: 1.6em; }
+    body.mobile-view .icon-button span { font-size: 0.4em; }
+    body.mobile-view .action-buttons { top: 15px; left: 10px; gap: 5px; }
+    body.mobile-view .action-buttons button { padding: 6px 10px; font-size: 0.8em; }
+
+    body.mobile-view .modal-content { width: 95%; padding: 20px; }
+
+    /* ★★★ 인쇄 전용 스타일 수정 ★★★ */
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 0.5cm;
+        }
+
+        body, .container {
+            background: #fff !important;
+            color: #000 !important;
+            font-size: 8pt;
+        }
+
+        body > *:not(.container) { display: none !important; }
+        .container {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+        }
+
+        .container > *:not(#result) {
+            display: none !important;
+        }
+        
+        #result {
+            display: block !important;
+            padding: 0 !important;
+            background: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+
+        #result h2, #result p, #result .winner {
+            font-size: 10pt !important;
+            margin: 2px 0 !important;
+            text-align: center;
+        }
+        #result h2 {
+            font-size: 12pt !important;
+            margin-bottom: 5px !important;
+        }
+        
+        #device-price-comparison {
+            font-size: 9pt !important;
+            padding: 5px 0 !important;
+            margin: 5px 0 !important;
+        }
+        #device-price-comparison h4 {
+            font-size: 10pt !important;
+            margin-bottom: 3px !important;
+        }
+
+        #discount-breakdown {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            justify-content: space-around;
+            gap: 5px !important;
+            margin-bottom: 5px !important;
+            padding-top: 5px !important;
+            border-top: 1px solid #ccc !important;
+        }
+        .breakdown-card {
+            flex: 1 1 45%;
+            padding: 5px !important;
+            font-size: 7.5pt !important;
+            border: 1px solid #ccc !important;
+        }
+        .breakdown-card h4 {
+            font-size: 8.5pt !important;
+            margin: 0 0 3px 0 !important;
+            padding-bottom: 2px !important;
+        }
+        .breakdown-card p, .breakdown-card ul, .breakdown-card li {
+            margin: 1px 0 !important;
+            padding: 0 !important;
+        }
+
+        .monthly-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 7pt;
+            page-break-inside: auto;
+        }
+        .monthly-table thead {
+            display: table-header-group;
+        }
+        .monthly-table tr, .monthly-table td, .monthly-table th {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        .monthly-table th, .monthly-table td {
+            padding: 1px;
+            border: 1px solid #ccc;
+        }
+        .monthly-table th {
+            background-color: #f2f2f2 !important;
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact;
+        }
+        
+        /* ★★★ 푸터 인쇄 시 숨김 ★★★ */
+        .footer-container {
+            display: none !important;
+        }
+    }
+    
+    /* ★★★ 모바일 캡처 전용 스타일 ★★★ */
+    .mobile-capture-view .result-section {
+        transform: scale(0.9); /* 전체적으로 크기를 살짝 줄여 여백 확보 */
+        transform-origin: top center;
+    }
+    .mobile-capture-view h2 { font-size: 2.2em !important; }
+    .mobile-capture-view p { font-size: 1.3em !important; }
+    .mobile-capture-view .winner { font-size: 1.5em !important; }
+    .mobile-capture-view .monthly-table { font-size: 1.1em !important; }
+    .mobile-capture-view .monthly-table th, .mobile-capture-view .monthly-table td { padding: 8px !important; }
+
+    #penalty-calc-table-wrapper {
+        margin-top: 30px;
+        padding: 20px;
+        background: #e8f0fe;
+        border-radius: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    #penalty-calc-table-wrapper table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    #penalty-calc-table-wrapper th, #penalty-calc-table-wrapper td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        white-space: nowrap; /* Prevent wrapping in penalty table for better column alignment */
+    }
+    #penalty-calc-table-wrapper th {
+        background: #f2f2f2;
+    }
+    #penalty-table-summary {
+        margin-top: 15px;
+        font-weight: bold;
+        color: #1a73e8;
+        text-align: center;
+    }
+    /* ★★★ 할인 내역 상세 스타일 추가 ★★★ */
+    #discount-breakdown {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 20px;
+        padding-top: 10px;
+        border-top: 1px dashed #ccc;
+    }
+    .breakdown-card {
+        flex: 1;
+        min-width: 300px;
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+    }
+    .breakdown-card h4 {
+        margin-top: 0;
+        color: #1a73e8;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+    .breakdown-card p {
+        margin: 5px 0;
+    }
+    .breakdown-card ul {
+        list-style-type: none;
+        padding-left: 0;
+        font-size: 0.9em;
+        margin-top: 10px;
+    }
+    .breakdown-card li {
+        padding: 4px 0;
+    }
+    .radio-button-group {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        padding: 5px 0;
+    }
+    .radio-button-group label {
+        font-weight: normal;
+        cursor: pointer;
+    }
+    /* ★★★ 텍스트 정렬 문제 수정을 위한 CSS ★★★ */
+    .radio-button-group input[type="radio"] {
+        vertical-align: middle;
+        margin-right: 5px;
+        position: relative;
+        top: -1px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+<!-- ★★★ 오른쪽 상단 버튼들 ★★★ -->
+<div class="top-right-buttons">
+    <button class="icon-button" onclick="openDateCalcModal()" title="날짜 계산기">
+        <i class="fas fa-calendar-alt"></i>
+        <span>(날짜계산)</span>
+    </button>
+    <button class="icon-button" onclick="openHelpModal()" title="도움말">
+        <i class="fas fa-question-circle"></i>
+        <span>(안내)</span>
+    </button>
+    <button class="icon-button" onclick="resetCalculator()" title="초기화">
+        <i class="fas fa-redo-alt"></i>
+        <span>(초기화)</span>
+    </button>
+</div>
+
+
+<div class="action-buttons">
+    <button id="printButton" onclick="printResultTable()">🖨️ 출력하기</button>
+    <button id="shareButton" onclick="shareResultTable()">🔗 공유하기</button>
+</div>
+
+<h1>요금계산기ver2.8 📱</h1>
+
+<div class="view-mode-buttons">
+    <button id="mainCalcViewBtn" class="active" onclick="setMainCalculatorLayout()">요금 계산기</button>
+    <button id="penaltyCalcViewBtn" onclick="setPenaltyLayout()">위약금 계산기</button>
+    <button id="pcViewBtn" onclick="setPCLayout()">PC 버전</button>
+    <button id="mobileViewBtn" onclick="setMobileLayout()">모바일 버전</button>
+</div>
+
+<!-- comparison-toggle을 main-calculator-content-wrapper 밖으로 이동 -->
+<div class="comparison-toggle" id="comparison-toggle">
+    <label style="margin-right: 15px;"><input type="radio" id="modeStoreVsUnlocked" name="calcMode" value="store_vs_unlocked" checked onchange="updateCalculationMode()"> <strong>매장 vs 자급제 비교</strong></label>
+    <label style="margin-right: 15px;"><input type="radio" name="calcMode" value="gongsi_vs_seonyak" onchange="updateCalculationMode()"> <strong>공시지원 vs 선택약정 비교</strong></label>
+    <label style="margin-right: 15px;"><input type="radio" name="calcMode" value="gongsi_only" onchange="updateCalculationMode()"> <strong>공시지원 단독계산</strong></label>
+    <label><input type="radio" name="calcMode" value="seonyak_only" onchange="updateCalculationMode()"> <strong>선택약정 단독계산</strong></label>
+</div>
+
+<div id="main-calculator-content-wrapper" class="main-content">
+    <div class="section" id="store-section">
+        <h3 id="store-title">🏬 매장 구매</h3>
+        <div class="input-group">
+            <label>통신사 선택</label>
+            <select id="carrier" onchange="updateCarrierCombinedDiscountOptions()">
+                <option value="SKT">SKT</option>
+                <option value="KT">KT</option>
+                <option value="LGU">LG U+</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>결합할인 유형<span class="tooltip-icon">(?)<span class="tooltip-text">통신사 결합 할인 유형을 선택하세요. 선택한 유형에 따라 요금제 할인율이 적용됩니다.</span></span></label>
+            <select id="combinedDiscountType" onchange="handleCombinedDiscountChange()">
+                <option value="none">결합없음</option>
+            </select>
+        </div>
+        <!-- ★★★ KT 프리미엄 가족결합 옵션 그룹 (숨겨진 상태) ★★★ -->
+        <div class="input-group" id="ktPremiumFamilyGroup" style="display: none; border: 1px solid #1a73e8; padding: 10px; border-radius: 5px;">
+            <label>회선 유형<span class="tooltip-icon">(?)<span class="tooltip-text">계산하려는 회선이 '베이스'인지 '구성원'인지 선택하세요. 할인 방식이 달라집니다. (요금제 77,000원 이상 시 적용)</span></span></label>
+            <div class="radio-button-group">
+                <label><input type="radio" name="ktPremiumRole" value="base" checked> 베이스</label>
+                <label><input type="radio" name="ktPremiumRole" value="member"> 구성원</label>
+            </div>
+            <label style="margin-top:10px;">인터넷 속도 (베이스 회선만 해당)</label>
+            <div class="radio-button-group">
+                <label><input type="radio" name="ktInternetSpeed" value="100m" checked> 100M</label>
+                <label><input type="radio" name="ktInternetSpeed" value="500m"> 500M 이상</label>
+            </div>
+        </div>
+        <!-- ★★★ LGU 투게더 결합 인원수 선택 그룹 (숨겨진 상태) ★★★ -->
+        <div class="input-group" id="lguTogetherGroup" style="display: none;">
+            <label>투게더 결합 인원</label>
+            <div class="radio-button-group">
+                <label><input type="radio" name="lguTogetherCount" value="2" checked> 2인</label>
+                <label><input type="radio" name="lguTogetherCount" value="3"> 3인</label>
+                <label><input type="radio" name="lguTogetherCount" value="4"> 4인 이상</label>
+            </div>
+        </div>
+        <!-- ★★★ LGU 참 쉬운 가족결합 회선 수 선택 그룹 (숨겨진 상태) ★★★ -->
+        <div class="input-group" id="lguEasyFamilyGroup" style="display: none;">
+            <label>참 쉬운 가족결합 회선 수</label>
+            <div class="radio-button-group">
+                <label><input type="radio" name="lguEasyFamilyCount" value="2" checked> 2회선</label>
+                <label><input type="radio" name="lguEasyFamilyCount" value="3"> 3회선</label>
+                <label><input type="radio" name="lguEasyFamilyCount" value="4"> 4~10회선</label>
+            </div>
+        </div>
+        <div class="input-group" id="gongsiDevicePriceGroup">
+            <label id="gongsiDevicePriceLabel">기기 구매가 (공시지원)<span class="tooltip-icon">(?)<span class="tooltip-text">실제 구매한 단말기 할부금을 입력하세요. 페이백일 경우 -숫자를 입력하세요.</span></span></label>
+            <input type="number" id="storeDevicePrice" value="0">
+        </div>
+        <div class="input-group" id="seonyakDevicePriceGroup" style="display: none;">
+            <label>기기 구매가 (선택약정)<span class="tooltip-icon">(?)<span class="tooltip-text">실제 구매한 단말기 할부금을 입력하세요. 페이백일 경우 -숫자를 입력하세요.</span></span></label>
+            <input type="number" id="seonyakDevicePrice" value="0">
+        </div>
+        <div class="input-group" id="paymentMethodGroup">
+            <label>기기값 납부 방식<span class="tooltip-icon">(?)<span class="tooltip-text">기기값 납부 방식을 선택하세요. 일시불 또는 24개월 할부(5.9%) 중 선택할 수 있습니다.</span></span></label>
+            <select id="storePaymentMethod">
+                <option value="lump_sum">일시불</option>
+                <option value="installment">24개월 할부 (5.9%)</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>초기 요금제<span class="tooltip-icon">(?)<span class="tooltip-text">기간 내에 사용하는 요금제를 입력해주세요.</span></span></label>
+            <input type="number" id="storePlan6m" value="0">
+            <div class="info-box-red">초기 요금제는 10,000원 ~ 130,000원 사이로 입력하세요.</div>
+        </div>
+        <div class="input-group">
+            <label>요금제 유지 개월수<span class="tooltip-icon">(?)<span class="tooltip-text">요금제를 사용하는 유지기간을 선택해주셔야합니다.</span></span></label>
+            <select id="storePlanMaintenanceMode" onchange="toggleMaintenanceMonthsInput()">
+                <option value="6">6개월 유지 (기본)</option>
+                <option value="4">4개월 유지</option>
+                <option value="custom">직접입력</option>
+            </select>
+        </div>
+        <div class="input-group" id="customMaintenanceMonthsGroup" style="display: none;">
+            <label for="customMaintenanceMonths">개월 수 직접입력 (1~24)</label>
+            <input type="number" id="customMaintenanceMonths" min="1" max="24" value="1">
+        </div>
+        <div class="input-group">
+            <label>유지 기간 이후 요금제<span class="tooltip-icon">(?)<span class="tooltip-text">원하는 요금제를 입력하세요.</span></span></label>
+            <input type="number" id="storePlanAfter6m" value="0">
+        </div>
+        <div class="input-group">
+            <label>부가서비스 금액<span class="tooltip-icon">(?)<span class="tooltip-text">부가서비스를 이용하는 금액 총액을 입력해주세요.</span></span></label>
+            <input type="number" id="storeExtraService" value="0">
+        </div>
+        <div class="input-group">
+            <label>부가서비스 납부 개월수<span class="tooltip-icon">(?)<span class="tooltip-text">부가서비스 유지하는 기간을 입력해주세요.</span></span></label>
+            <select id="storeExtraMode" onchange="toggleCustomMonthsInput()">
+                <option value="none">부가서비스 없음</option>
+                <option value="3months">3개월(LG)</option>
+                <option value="4months">4개월</option>
+                <option value="custom">직접입력</option>
+                <option value="monthly">매월</option>
+            </select>
+        </div>
+          <div class="input-group" id="customExtraMonthsGroup" style="display: none;">
+              <label for="customExtraMonths">부가서비스 개월 수 직접입력 (1~24)</label>
+              <input type="number" id="customExtraMonths" min="1" max="24" value="1">
+          </div>
+        <div class="input-group">
+            <label>선택약정 할인 (25%)<span class="tooltip-icon">(?)<span class="tooltip-text">공시지원금으로 진행할경우 SK와 U+는 19개월차부터 선택약정(25%가)이 가능하며 KT는 25개월차에 선택이 가능합니다.</span></span></label>
+            <select id="storeContractDuration">
+                <option value="none">선택 안함</option>
+                <option value="12">12개월</option>
+                <option value="24">24개월</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>복지할인 유형</label>
+            <select id="storeWelfareDiscount">
+                <option value="none">적용안함</option>
+                <option value="disability">장애등급</option>
+                <option value="national_merit">국가유공자</option>
+                <option value="basic_pension">기초연금 수급자</option>
+                <option value="next_lower">차상위계층</option>
+                <option value="basic_lifemed">기초생활수급자(생계/의료)</option>
+                <option value="basic_houseedu">기초생활수급자(주거/교육)</option>
+            </select>
+        </div>
+        <div class="input-group" id="premierDiscountGroup" style="display: none;">
+            <label>프리미어 요금제 약정할인<span class="tooltip-icon">(?)<span class="tooltip-text">85000원 이상요금제 사용시 매달 5,250원이 할인이됩니다 약정은 2년이며 해지,혹은 번호이동시 위약금에 해당됩니다</span></span></label>
+            <select id="premierContractDiscount">
+                <option value="none">적용안함</option>
+                <option value="apply">약정할인적용(월 -5,250원)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="section" id="unlocked-section">
+        <h3>🛍 자급제 구매</h3>
+        <div class="input-group">
+            <label>기기 구매가<span class="tooltip-icon">(?)<span class="tooltip-text">자급제 구매하는 금액을 입력하세요.</span></span></label>
+            <input type="number" id="unlockedDevicePrice" value="0">
+        </div>
+        <div class="input-group">
+            <label>사용 요금제<span class="tooltip-icon">(?)<span class="tooltip-text">사용 중이신 요금제 혹은 생각하시는 요금제를 입력하세요.</span></span></label>
+            <input type="number" id="unlockedPlan" value="0">
+        </div>
+        <div class="input-group info-box">
+            자급제는 일시불 구매이기에 할부 적용이 되지 않습니다.<br>카드 할부는 카드사에 별도로 문의하세요.
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="unlockedContractDiscount" checked> <label for="unlockedContractDiscount">선택약정 할인 (25%)</label>
+        </div>
+        <div class="input-group">
+            <label>복지할인 유형</label>
+            <select id="unlockedWelfareDiscount">
+                <option value="none">적용안함</option>
+                <option value="disability">장애등급</option>
+                <option value="national_merit">국가유공자</option>
+                <option value="basic_pension">기초연금 수급자</option>
+                <option value="next_lower">차상위계층</option>
+                <option value="basic_lifemed">기초생활수급자(생계/의료)</option>
+                <option value="basic_houseedu">기초생활수급자(주거/교육)</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <button id="planListToggleButton" class="calc-button" style="background-color: #6c757d; font-size: 1em; margin-top: 0; margin-bottom: 10px;" onclick="togglePlanList()">요금제 목록 보기</button>
+            <div id="planSelectorContainer" style="display: none;">
+                <label>요금제 목록</label>
+                <select id="unlockedCarrierSelect" onchange="updatePlanList()">
+                    <option value="SKT">SKT</option>
+                    <option value="KT">KT</option>
+                    <option value="LGU">LG U+</option>
+                </select>
+                <select id="unlockedPlanSelect" onchange="displayPlanDetails()" style="margin-top: 5px;">
+                    <option value="">요금제를 선택하세요</option>
+                </select>
+                <div id="planDescriptionBox" class="plan-description-box"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="penalty-calculator-wrapper">
+    <h2>위약금 계산기</h2>
+    <div class="main-content" id="penalty-input-sections"> <!-- Added id for targeting in print CSS -->
+        <div class="section">
+            <h3>공시지원 위약금</h3>
+            <div class="input-group">
+                <label>받은 공시지원금<span class="tooltip-icon">(?)<span class="tooltip-text">공시지원금은 각 통신사별 홈페이지에서 확인 가능합니다. 개통한 날짜에 공시지원금을 확인해주세요.</span></span></label>
+                <input type="number" id="penaltyGongsiReceived" value="0">
+            </div>
+        </div>
+        <div class="section">
+            <h3>선택약정할인 25%할인 24개월약정</h3>
+            <div class="input-group">
+                <label>요금제 (25% 할인 전)<span class="tooltip-icon">(?)<span class="tooltip-text">요금할인 25%할인을 2년 중 해지 시 위약금을 확인합니다.</span></span></label>
+                <input type="number" id="penaltySeonyak24PlanFee" value="0">
+            </div>
+        </div>
+        <div class="section">
+            <h3>선택약정할인 25%할인 12개월약정</h3>
+            <div class="input-group">
+                <label>요금제 (25% 할인 전)<span class="tooltip-icon">(?)<span class="tooltip-text">요금할인 25%할인을 1년 중 해지 시 위약금을 확인합니다.</span></span></label>
+                <input type="number" id="penaltySeonyak12PlanFee" value="0">
+            </div>
+        </div>
+        <div class="section">
+            <h3>추가지원금 위약금</h3>
+            <div class="input-group">
+                <label>추가지원 들어간 금액<span class="tooltip-icon">(?)<span class="tooltip-text">매장 혹은 온라인 구매 시 추가지원금이 위약금으로 해당되며 이 또한 계산합니다.</span></span></label>
+                <input type="number" id="penaltyAdditionalAmount" value="0">
+            </div>
+        </div>
+    </div>
+
+    <div class="info-box-red" style="margin-top: 20px; flex-basis: 100%; text-align: left; padding: 15px;">
+        <strong>⚠️ 위약금 계산 참고:</strong><br>
+        1. 위 계산식은 제공된 엑셀 수식을 기반으로 합니다.<br>
+        2. 각 위약금은 해당 월차에 해지 시 예상되는 금액입니다. (누적 아님)<br>
+        3. 실제 통신사 위약금은 요금제 사용량, 결합 여부 등 다양한 변수에 따라 달라질 수 있으므로, 정확한 금액은 반드시 해당 통신사에 문의하세요.
+    </div>
+    
+    <button class="calc-button" id="calculateAllPenaltiesBtn" onclick="calculateAllPenaltiesInTable()" style="margin-top: 20px; flex-basis: 100%;">총 위약금 계산하기</button>
+
+    <div id="penalty-calc-table-wrapper" style="display:none;">
+        <h3>월별 예상 위약금</h3>
+        <table class="monthly-table">
+            <thead>
+                <tr>
+                    <th>개월차</th>
+                    <th>공시지원 위약금</th>
+                    <th>추가지원금 위약금</th>
+                    <th>선택약정 (24개월) 위약금</th>
+                    <th>선택약정 (12개월) 위약금</th>
+                    <th>총 위약금</th>
+                </tr>
+            </thead>
+            <tbody id="penaltyMonthlyResults">
+                <!-- Penalty calculation results will be inserted here -->
+            </tbody>
+        </table>
+        <div id="penalty-table-summary"></div> <!-- Re-added this div -->
+    </div>
+</div>
+
+
+<div id="error-message" class="error-message"></div>
+<button class="calc-button" id="mainCalcButton" onclick="calculate()">계산하기</button>
+
+<div id="result" class="result-section" style="display:none;">
+    <h2 id="result-title">📊 최종 비교 결과</h2>
+    <p><span id="left-column-total-label">매장 구매 총비용(표시/누적)</span>: <span id="storeTotal"></span></p>
+    <p><span id="right-column-total-label">자급제 구매 총비용</span>: <span id="unlockedTotal"></span></p>
+    <p id="diffValueP"><span id="diffValueLabel">총비교 차액(비교전용)</span>: <span id="diffValue"></span></p>
+    <div class="winner" id="winner"></div>
+    
+    <!-- ★★★ 월 할부금 표시 영역 추가 ★★★ -->
+    <p id="installment-info" style="display:none; text-align: center; font-weight: bold; color: #1a73e8; margin-top: 15px;"></p>
+
+    <!-- ★★★ 단말기 구매 가격 비교 섹션 추가 ★★★ -->
+    <div id="device-price-comparison" style="display:none; text-align: center; margin: 15px 0; padding: 10px; background: #fff; border-radius: 8px; border: 1px dashed #1a73e8;">
+        <h4>📱 단말기 구매 가격</h4>
+        <p style="margin: 5px 0;"><span id="left-column-device-label"></span>: <span id="storeDevicePriceResult"></span></p>
+        <p style="margin: 5px 0;"><span id="right-column-device-label"></span>: <span id="unlockedDevicePriceResult"></span></p>
+    </div>
+
+    <!-- ★★★ 할인 내역 상세 표시 영역 ★★★ -->
+    <div id="discount-breakdown" style="display:none;"></div>
+
+    <div class="monthly-table-wrapper">
+        <table class="monthly-table">
+            <thead>
+                <tr>
+                    <th>개월차</th>
+                    <th id="left-column-header">매장 월납(표시)</th>
+                    <th id="left-column-cumulative-header">매장 누적(표시)</th>
+                    <th id="right-column-header">자급제 월납</th>
+                    <th id="right-column-cumulative-header">자급제 누적</th>
+                </tr>
+            </thead>
+            <tbody id="monthly"></tbody>
+        </table>
+    </div>
+</div>
+</div><!--.container end -->
+
+<footer id="page-footer" class="footer-container"></footer>
+
+<!-- ★★★ 도움말 모달 창 HTML 추가 ★★★ -->
+<div id="helpModal" class="modal-overlay" onclick="closeHelpModal()">
+    <div class="modal-content" onclick="event.stopPropagation();">
+        <span class="modal-close-button" onclick="closeHelpModal()">&times;</span>
+        <h2>할인 적용 순서 안내</h2>
+        <p>요금 할인은 일반적으로 <strong>선택약정 → 결합할인 → 복지할인</strong> 순서로 적용됩니다. 통신사 및 결합 유형에 따라 세부 기준이 달라질 수 있습니다.</p>
+        
+        <h3>SKT 할인 순서</h3>
+        <ul>
+            <li>1. <strong>선택약정 (25%)</strong> 할인이 가장 먼저 적용됩니다.</li>
+            <li>2. 그 후, 선택약정으로 할인된 금액에 대해 <strong>온가족할인 (10% 또는 30%)</strong>이 중복으로 적용됩니다.</li>
+            <li>3. 마지막으로, 모든 할인이 적용된 후 남은 최종 요금에서 <strong>복지할인</strong>이 적용됩니다.</li>
+            <li>※ <strong>요금가족결합 (-3,500원)</strong>은 정액 할인이므로 다른 할인과 별개로 적용될 수 있습니다.</li>
+        </ul>
+
+        <h3>KT 할인 순서</h3>
+        <ul>
+            <li>1. <strong>선택약정 (25%)</strong> 할인이 가장 먼저 적용됩니다.</li>
+            <li>2. 그 후, <strong>프리미엄 가족결합</strong> 또는 <strong>싱글결합</strong>이 적용됩니다.</li>
+            <li>3. 마지막으로, <strong>복지할인</strong>이 적용됩니다.</li>
+            <li>※ 복지할인은 <strong>(기본요금 - 결합할인)</strong> 금액을 기준으로 계산됩니다. 예를 들어, 9만원 요금제에 2만원 결합할인이 있다면, 복지할인은 7만원을 기준으로 계산됩니다.</li>
+        </ul>
+
+        <h3>LG U+ 할인 순서</h3>
+        <ul>
+            <li>1. <strong>선택약정 (25%)</strong> 할인이 가장 먼저 적용됩니다.</li>
+            <li>2. 그 후, <strong>투게더/한방에YO/참쉬운가족 결합</strong>이 적용됩니다.</li>
+            <li>3. <strong>프리미어 요금제 약정할인 (-5,250원)</strong>이 추가로 적용됩니다. (해당 요금제 이용 시)</li>
+            <li>4. 마지막으로, <strong>복지할인</strong>이 적용됩니다.</li>
+            <li>※ KT와 마찬가지로, 복지할인은 <strong>(기본요금 - 결합할인)</strong> 금액을 기준으로 계산됩니다.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- ★★★ 날짜 계산기 모달 창 HTML 수정 ★★★ -->
+<div id="dateCalcModal" class="modal-overlay" onclick="closeDateCalcModal()">
+    <div class="modal-content" onclick="event.stopPropagation();">
+        <span class="modal-close-button" onclick="closeDateCalcModal()">&times;</span>
+        <h2>날짜 계산기</h2>
+        <p>이 계산기는 부가서비스 해지날짜와 요금제 변경날짜를 계산해주는 것입니다.</p>
+        
+        <div class="date-calculator">
+            <div class="date-calculator-section">
+                <h3>D + 계산기 (일)</h3>
+                <div class="input-group">
+                    <label for="day-start-date">시작 날짜</label>
+                    <input type="date" id="day-start-date">
+                </div>
+                <div class="input-group">
+                    <label for="days-to-add">더할 일수</label>
+                    <input type="number" id="days-to-add" value="95">
+                </div>
+                <button class="calc-button" onclick="calculateDays()">계산하기</button>
+                <p id="day-result" class="result"></p>
+            </div>
+            <div class="date-calculator-section">
+                <h3>M + 계산기 (월)</h3>
+                <div class="input-group">
+                    <label for="month-start-date">시작 날짜</label>
+                    <input type="date" id="month-start-date">
+                </div>
+                <div class="input-group">
+                    <label for="months-to-add">유지 개월수 (M+)</label>
+                    <input type="number" id="months-to-add" value="6">
+                </div>
+                <button class="calc-button" onclick="calculateMonths()">계산하기</button>
+                <p id="month-result" class="result"></p>
+                <div class="info-box" style="font-size: 0.8em; text-align: left;">
+                    <strong>참고:</strong> 'M+3'은 개통월 포함 총 4개월 유지 후, 그 다음 달 1일부터 변경 가능하다는 의미입니다. M+3을 계산하려면 '3'을 입력하세요.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+// CSV 파싱 함수 (제공된 CSV는 데이터가 모두 0입니다)
+const parseCSV = (csv) => {
+    const lines = csv.split('\n').map(line => line.split(','));
+    const penaltyData = {};
+
+    let dataStartRow = -1;
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i][1] && lines[i][1].trim() === '개월수') {
+            dataStartRow = i + 1;
+            break;
+        }
+    }
+
+    if (dataStartRow === -1) {
+        console.error("Could not find data start row in CSV.");
+        return {};
+    }
+
+    for (let i = dataStartRow; i < lines.length; i++) {
+        const row = lines[i];
+        const month = parseInt(row[1]?.trim());
+        if (isNaN(month) || month < 1 || month > 24) continue;
+
+        penaltyData[month] = {
+            gongsi: parseFloat(row[2]?.trim() || '0'), // 공시지원 위약금 (금액)
+            seonyak24: parseFloat(row[4]?.trim() || '0'), // 선택약정 위약금 (24개월)
+            seonyak12: parseFloat(row[6]?.trim() || '0'), // 선택약정 위약금 (12개월)
+            additional: parseFloat(row[8]?.trim() || '0') // 추가지원금 위약금
+        };
+    }
+    return penaltyData;
+};
+
+// 사용자가 제공한 위약금 CSV 데이터 (현재 모든 위약금 값이 0으로 되어 있음)
+const rawPenaltyCsvData = `,,,,,,,,,,,,,,\n,위약금 계산기(노란부분만 쓰세요),,,,,,,,,,,,,\n,공시지원 위약금 계산기,,↓선택약정위약금 ↓(24개월),,↓선택약정위약금 ↓(12개월),,추가지원금 위약금 계산기 ,,,,,,,\n,,,,,,,,,,,,,\n,받은 공시지원금,0,요금제,0,요금제,0,"추가지원\n 들어간금액",0,,,,,,\n,추가지원금,0,추가지원금,0,추가지원금,0,,,,,,,,\n,개월수,금액,개월수,위약금,개월수,위약금,개월수,위약금,,,, ,,\n,1,0,1,0,1,0,1,0,,,,,,\n,2,0,2,0,2,0,2,0,,,,,,\n,3,0,3,0,3,0,3,0,,,,,,\n,4,0,4,0,4,0,4,0,,,,,,\n,5,0,5,0,5,0,5,0,,,,,,\n,6,0,6,0,6,0,6,0,,,,,,\n,7,0,7,0,7,0,7,0,,,,,, \n,8,0,8,0,8,0,8,0,,,,,,\n,9,0,9,0,9,0,9,0,,,,,,\n,10,0,10,0,10,0,10,0,,,,,,\n,11,0,11,0,11,0,11,0,,,,,,\n,12,0,12,0,12,0,12,0,,,,,,\n,13,0,13,0,13,0,13,0,,,,,,\n,14,0,14,0,14,0,14,0,,,,,,\n,15,0,15,0,15,0,15,0,,,,,,\n,16,0,16,0,16,0,16,0,,,,,,\n,17,0,17,0,17,0,17,0,,,,,,\n,18,0,18,0,18,0,18,0,,,,,,\n,19,0,19,0,19,0,19,0,,,,,,\n,20,0,20,0,20,0,20,0,,,,,,\n,21,0,21,0,21,0,21,0,,,,,,\n,22,0,22,0,22,0,22,0,,,,,,\n,23,0,23,0,23,0,23,0,,,,,,\n,24,0,24,0,24,0,24,0,,,,,,\n, , , , , , , , , , , , ,\n,"참고\n (위약금의 경우 통신사 고지된 금액으로 계산됩니다)", , , , , , , , , , , , ,\n, , , , , , , , , , , , ,\n,"공시위약금은 매달 사용한 데이터 및 금액에따라 줄어듭니다\n 현재계산기는 일괄적으로 금액을 계산합니다", , , , , , , , , , , , ,\n,"선택약정 위약금 (12/24)은 요금제에서 25%할인 받은 금액에따라 위약금이 발생됩니다\n 현재계산기는 일괄적으로 요금제 100%금액으로 계산합니다", , , , , , , , , , , , ,\n,추가지원금 위약금은 매달 사용한 금액에따라 줄어듭니다, , , , , , , , , , , , ,`;
+
+const parsedPenaltyData = parseCSV(rawPenaltyCsvData);
+
+
+// ★★★ 요금제 데이터 ★★★
+const planData = {
+    SKT: [
+        { name: 'ZEM플랜 스마트', price: 19800, description: `📞 60분 ✉️ 무제한 📶 1.5GB\n\n 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 SKT 망내 지정 2회선 무제한 (그 외 600분 소진 시 차단, 충전 후 이용 가능)\n\n잼(ZEM) 이용 Data 무료 제공\n\n청소년 안심팩 기본 제공` },
+        { name: 'ZEM플랜 베스트', price: 26000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n기본 데이터 3GB 소진 시 400Kbps 속도 무제한\n(기본 데이터 소진 후 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
+        { name: '5G ZEM 플랜 베스트', price: 26000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n  만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n기본 데이터 3GB 소진 시 400Kbps 속도 무제한\n(기본 데이터 소진 후 사용 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
+        { name: 'LTE 0틴 플랜 스몰', price: 33000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 18세 이하 가입 가능\n(25년도 기준 06년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n심야 사용 데이터(0시 ~ 오전 7시) 75% 할인\n\n기본 데이터 2.5GB 소진 시 400Kbps 속도 무제한` },
+        { name: '5G ZEM 플랜 퍼펙트', price: 36000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 1Mbps 속도 무제한\n(기본 데이터 소진 후 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
+        { name: '5G컴팩트', price: 39000, description: `📞 무제한 ✉️ 무제한 📶 6GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G컴팩트플러스', price: 45000, description: `📞 무제한 ✉️ 무제한 📶 8GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 8GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '0틴 5G', price: 45000, description: `📞 무제한 ✉️ 무제한 📶 9GB\n\n 만 18세 이하 가입 가능\n(25년도 기준 06년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 제공\n\n기본 데이터 9GB 소진 시 1Mbps 속도 무제한` },
+        { name: '5G베이직', price: 49000, description: `📞 무제한 ✉️ 무제한    11GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 11GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G슬림', price: 55000, description: `📞 무제한 ✉️ 무제한 📶 15GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 15GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G슬림 (24GB)', price: 59000, description: `📞 무제한 ✉️ 무제한  24GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G베이직플러스 (37GB)', price: 62000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 13GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 13GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G베이직플러스 (54GB)', price: 64000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 30GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 30GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G 레귤러', price: 66000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 50GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 50GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G베이직플러스 (99GB)', price: 68000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 75GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 75GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G 스탠다드', price: 69000, description: `📞 무제한 ✉️ 무제한 📶 110GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 110GB 소진 시 5Mbps 속도 무제한\n\n기본 제공 데이터에서 48GB까지 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G 레귤러플러스', price: 79000, description: `📞 무제한 ✉️ 무제한 📶 250GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 250GB 소진 시 5Mbps 속도 무제한\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 1회선 제공)` },
+        { name: '5G 프라임', price: 89000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n데이터 완전 무제한\n\n기본 제공 데이터에서 60GB까지 테더링 및 데이터 선물, 함께 쓰기 등 공유 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 1회선 제공)\n\n구독상품 3개 중 택 1 할인 제공` },
+        { name: '5G 프라임플러스', price: 99000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n데이터 완전 무제한\n\n기본 제공 데이터에서 80GB까지 테더링 및 데이터 선물, 함께 쓰기 등 공유 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 2회선 제공)\n\nT우주/넷플/웨이브/플로 선택 필수` },
+        { name: '5G 프리미엄', price: 109000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n데이터 완전 무제한\n\n기본 제공 데이터에서 100GB까지 테더링 및 데이터 선물, 함께 쓰기 등 공유 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 2회선 제공)\n\nT우주/넷플/웨이브/플로 선택 필수` },
+        { name: '5G 플래티넘', price: 125000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n데이터 완전 무제한\n\n기본 제공 데이터에서 100GB까지 테더링 및 데이터 선물, 함께 쓰기 등 공유 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 2회선 제공)\n\nT우주/넷플/웨이브/플로 선택 필수` },
+    ],
+    KT: [
+        { name: 'Y주니어 19.8', price: 19800, description: `📞 0분 ✉️ 일 200건 📶 무제한\n🔹 만 12세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n18,432원 조절 사용\n망내 지정 2회선 통화 무제한` },
+        { name: 'Y틴 20', price: 20900, description: `📞 0분 ✉️ 일 200건 📶 0MB\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n28,672원 조절 사용 후 차단` },
+        { name: 'Y 주니어 ON', price: 24000, description: `📞 60분 ✉️ 무제한 📶 무제한\n🔹 만 12세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n음성 망내 무제한\n기본 데이터 1.5GB 소진 시 400Kbps` },
+        { name: 'Y틴 27', price: 27390, description: `📞 0분 ✉️ 일 200건 📶 0MB\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n43,008알 조절 사용 후 차단` },
+        { name: '5G 주니어 슬림', price: 28000, description: `📞 무제한 ✉️ 무제한 📶 3GB\n🔹 만 12세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n기본 데이터 3GB 소진 시 400Kbps` },
+        { name: 'Y틴 ON', price: 33000, description: `📞 무제한 ✉️ 무제한 📶 2.5GB\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n기본 데이터 2.5GB 소진 시 400Kbps` },
+        { name: '5G슬림 4GB', price: 37000, description: `📞 무제한 ✉️ 무제한 📶 4GB\n- 기본 데이터 4GB 소진 시 400Kbps` },
+        { name: '5G 주니어', price: 38000, description: `📞 무제한 ✉️ 무제한 📶 5GB\n🔹 만 12세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n기본 데이터 5GB 소진 시 1Mbps` },
+        { name: '5G 슬림 7GB', price: 45000, description: `📞 무제한 ✉️ 무제한 📶 7GB\n- 기본 데이터 7GB 소진 시 400Kbps` },
+        { name: '5G Y틴', price: 47000, description: `📞 무제한 ✉️ 무제한 📶 10GB\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n기본 데이터 10GB 소진 시 1Mbps` },
+        { name: '5G슬림 10GB', price: 50000, description: `📞 무제한 ✉️ 무제한 📶 10GB\n- 基本数据 10GB 耗尽时 400Kbps` },
+        { name: '5G 슬림 15GB', price: 55000, description: `📞 무제한 ✉️ 무제한 📶 15GB\n- 기본 데이터 15GB 소진 시 1Mbps` },
+        { name: '5G슬림 21GB', price: 58000, description: `📞 무제한 ✉️ 무제한 📶 21GB\n- 기본 데이터 21GB 소진 시 1Mbps` },
+        { name: '5G슬림 30GB', price: 61000, description: `📞 무제한 ✉️ 무제한 📶 30GB\n- 기본 데이터 30GB 소진 시 1Mbps` },
+        { name: '5G슬림 50GB', price: 63000, description: `📞 무제한 ✉️ 무제한 📶 50GB\n- 기본 데이터 50GB 소진 시 1Mbps` },
+        { name: '5G슬림 70GB', price: 65000, description: `📞 무제한 ✉️ 무제한 📶 70GB\n- 기본 데이터 70GB 소진 시 1Mbps` },
+        { name: '5G슬림 90GB', price: 67000, description: `📞 무제한 ✉️ 무제한 📶 90GB\n- 기본 데이터 90GB 소진 시 1Mbps` },
+        { name: '5G슬림 110GB', price: 69000, description: `📞 무제한 ✉️ 무제한 📶 110GB\n- 기본 데이터 110GB 소진 시 1Mbps` },
+        { name: '5G 베이직', price: 80000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n- 데이터 완전 무제한` },
+        { name: '5G 초이스베이직', price: 90000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n- 데이터 완전 무제한\n- OTT 서비스 선택 필수` },
+        { name: '5G 스페셜', price: 100000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n- 데이터 완전 무제한\n- 멤버십 VVIP 등급` },
+        { name: '5G 초이스 스페셜', price: 110000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n- 데이터 완전 무제한\n- OTT 선택 필수` },
+        { name: '5G 초이스 프리미엄', price: 130000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n데이터완전무제한\n공유데이터100GB\n로밍3Mbps 무제한\n음성/문자/집/이동전화 무제한 / 기본제공` },
+    ],
+    LGU: [
+        { name: '청소년 20.9', price: 20900, description: `📞 60분 ✉️ 무제한 📶 0.7GB\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 망내 지정 2회선 무제한 (그 외 600분 소진 시 차단, 충전 후 이용 가능)\n\n기본 데이터 700MB 소진 시 400Kbps 속도 무제한` },
+        { name: '키즈22', price: 22000, description: `📞 무제한 ✉️ 무제한 📶 2GB\n\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 110분 소진 시 차단\n\n기본 데이터 2GB 소진 시 400Kbps 속도 무제한` },
+        { name: '5G 키즈 29', price: 29000, description: `📞 무제한 ✉️ 무제한 📶 5.5GB\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 소진 시 차단\n\n기본 데이터 5.5GB 소진 시 1Mbps 속도 무제한` },
+        { name: '추가요금 걱정없는 데이터 청소년 33', price: 33000, description: `📞 무제한 ✉️ 무제한 📶 2GB\n\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 110분 소진 시 차단\n\n기본 데이터 2GB 소진 시 400Kbps 속도 무제한` },
+        { name: '5G 미니', price: 37000, description: `📞 무제한 ✉️ 무제한 📶 5GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 5GB 소진 시 400Kbps 속도 무제한\n\n기본 데이터 내에서 쉐어링(데이터 주고받기), 테더링 가능` },
+        { name: '5G 키즈 39', price: 39000, description: `📞 무제한 ✉️ 무제한 📶 5.5GB\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 소진 시 차단\n\n기본 데이터 5.5GB 소진 시 1Mbps 속도 무제한` },
+        { name: '5G 라이트 청소년 45', price: 45000, description: `📞 무제한 ✉️ 무제한 📶 8GB\n\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 소진 시 차단\n\n기본 데이터 8GB 소진 시 1Mbps 속도 무제한` },
+        { name: '5G 슬림+', price: 47000, description: `📞 무제한 ✉️ 무제한 📶 9GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 9GB 소진 시 400Kbps 속도 무제한\n\n기본 데이터 내에서 쉐어링(데이터 주고받기), 테더링 가능` },
+        { name: '5G 라이트+', price: 55000, description: `📞 무제한 ✉️ 무제한 📶 14GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 14GB 소진 시 1Mbps 속도 무제한\n\n기본 데이터 내에서 쉐어링(데이터 주고받기), 테더링 가능` },
+        { name: '5G 베이직+', price: 59000, description: `📞 무제한 ✉️ 무제한 📶 24GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB 소진 시 1Mbps 속도 무제한\n\n기본 데이터 내에서 쉐어링(데이터 주고받기), 테더링 가능` },
+        { name: '추가요금 걱정없는 데이터 청소년 59', price: 59000, description: `📞 무제한 ✉️ 무제한 📶 9GB\n\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 소진 시 차단\n\n기본 데이터 9GB 소진 시 1Mbps 속도 무제한` },
+        { name: '5G 심플+', price: 61000, description: `📞 무제한 ✉️ 무제한 📶 31GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 31GB 소진 시 1Mbps 속도 무제한\n\n기본 데이터 내에서 쉐어링(데이터 주고받기), 테더링 가능` },
+        { name: '5G 데이터 레귤러', price: 63000, description: `📞 무제한 ✉️ 무제한 📶 50GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 50GB 소진 시 1Mbps 속도 무제한\n\n기본 제공량 내 40GB 한도에서 데이터 공유, 데이터 주고받기 가능` },
+        { name: '5G 데이터 플러스', price: 66000, description: `📞 무제한 ✉️ 무제한 📶 80GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 80GB 소진 시 1Mbps 속도 무제한\n\n기본 제공량 내 45GB 한도에서 데이터 공유, 데이터 주고받기 가능` },
+        { name: '5G 데이터 슈퍼', price: 68000, description: `📞 무제한 ✉️ 무제한 📶 95GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 95GB 소진 시 3Mbps 속도 무제한\n\n기본 제공량 내 50GB 한도에서 데이터 공유, 데이터 주고받기 가능` },
+        { name: '추가요금 걱정없는 데이터 청소년 69', price: 69000, description: `📞 무제한 ✉️ 무제한 📶 일 5GB\n\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 소진 시 차단\n\n기본 데이터 일 5GB 소진 시 5Mbps 속도 무제한` },
+        { name: '5G 스탠다드 에센셜', price: 70000, description: `📞 무제한 ✉️ 무제한 📶 125GB\n\n음성 유/무선 무제한\n\n기본 데이터 125GB 소진 시 5Mbps 속도 무제한\n\n기본 제공량 내 55GB 한도에서 데이터 공유, 데이터 주고받기 가능` },
+        { name: '5G 스탠다드', price: 75000, description: `📞 무제한 ✉️ 무제한 📶 150GB\n\n음성 유/무선 무제한\n\n기본 데이터 150GB 소진 시 5Mbps 속도 무제한\n\n기본 제공량 내 60GB 한도에서 데이터 공유, 데이터 주고받기 가능` },
+        { name: '5G 프리미어 에센셜', price: 85000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n데이터 완전 무제한\n\n별도 공유 데이터 최대 70GB 제공, 데이터 주고받기 이용 가능\n\n프리미어 요금제 약정할인 제공 (별도 가입 필수)` },
+        { name: '5G 프리미엄 에센셜 청소년', price: 85000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 18세 이하 가입 가능\n({YEAR}년도 기준 {BIRTH_YEAR}년생 생일 이전)\n\n데이터 완전 무제한\n\n별도 데이터 테더링 최대 70GB 제공\n\n🔻 프리미어 요금제 약정할인 제공 (별도 가입 필수)` },
+        { name: '5G 프리미어 레귤러', price: 95000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n데이터 완전 무제한\n\n별도 공유 데이터 최대 80GB, 데이터 주고받기 이용 가능\n\n스마트기기 또는 데이터쉐어링 요금 중 1회선 할인 제공` },
+        { name: '5G 프리미어 플러스', price: 105000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n데이터 완전 무제한\n\n별도 공유 데이터 최대 100GB, 데이터 주고받기 이용 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 2회선 제공)` },
+        { name: '5G 프리미어 슈퍼', price: 115000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n별도 공유 데이터 최대 100GB, 데이터 주고받기 이용 가능\n· 데이터 주고받기 일반 2회, 결합 기준 가족 8회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 주기 불가능\n\n참 쉬운 가족 가입 시 공유 데이터 50GB 제공 (1회 최대 5GB)\n\n프리미어 요금제 약정할인 제공 (별도 가입 필수)\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 2회선 제공)\n\n멤버십 VVIP등급은 익월/익익월 1일부터 제공` },
+        { name: '5G 시그니처', price: 130000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n데이터 무제한\n공유 데이터: 테더링+쉐어링 120GB + 참 쉬운 가족 데이터 60GB\n음성통화: 집/이동전화 무제한 + 부가통화 300분\n스마트기기 2대 월정액 할인 (최대 33,000원)\n5G 시그니처 가족할인 33,000원` },
+    ]
+};
+
+planData.SKT.sort((a, b) => a.price - b.price);
+planData.KT.sort((a, b) => a.price - b.price);
+planData.LGU.sort((a, b) => a.price - b.price);
+
+// ★★★ 도움말 모달 관련 함수 추가 ★★★
+function openHelpModal() {
+    document.getElementById('helpModal').style.display = 'block';
+}
+
+function closeHelpModal() {
+    document.getElementById('helpModal').style.display = 'none';
+}
+
+// ★★★ 날짜 계산기 모달 관련 함수 추가 ★★★
+function openDateCalcModal() {
+    document.getElementById('dateCalcModal').style.display = 'block';
+}
+
+function closeDateCalcModal() {
+    document.getElementById('dateCalcModal').style.display = 'none';
+}
+
+function calculateDays() {
+    const startDateInput = document.getElementById('day-start-date');
+    const daysToAdd = parseInt(document.getElementById('days-to-add').value, 10);
+    const resultEl = document.getElementById('day-result');
+
+    if (!startDateInput.value || isNaN(daysToAdd)) {
+        resultEl.textContent = '날짜와 일수를 모두 입력해주세요.';
+        return;
+    }
+
+    const startDate = new Date(startDateInput.value);
+    startDate.setDate(startDate.getDate() + daysToAdd);
+
+    const year = startDate.getFullYear();
+    const month = String(startDate.getMonth() + 1).padStart(2, '0');
+    const day = String(startDate.getDate()).padStart(2, '0');
+
+    resultEl.textContent = `결과: ${year}-${month}-${day}`;
+}
+
+// ★★★ M+ 계산기 로직 수정 ★★★
+function calculateMonths() {
+    const startDateInput = document.getElementById('month-start-date');
+    const monthsToAdd = parseInt(document.getElementById('months-to-add').value, 10);
+    const resultEl = document.getElementById('month-result');
+
+    if (!startDateInput.value || isNaN(monthsToAdd)) {
+        resultEl.textContent = '날짜와 개월수를 모두 입력해주세요.';
+        return;
+    }
+
+    // Create a date object from the start date
+    const startDate = new Date(startDateInput.value);
+    
+    // Add the specified number of months for the maintenance period
+    // Then, add one more month to get to the month when changes are allowed
+    startDate.setMonth(startDate.getMonth() + monthsToAdd + 1);
+    
+    // Set the date to the 1st of that month
+    startDate.setDate(1);
+
+    const year = startDate.getFullYear();
+    const month = String(startDate.getMonth() + 1).padStart(2, '0');
+    const day = String(startDate.getDate()).padStart(2, '0');
+
+    resultEl.textContent = `변경 가능일: ${year}-${month}-${day}`;
+}
+
+
+function format(num){ return Math.max(0,Math.round(num)).toLocaleString('ko-KR')+'원'; }
+
+function formatWithColor(num){
+    const roundedNum = Math.round(num);
+    const formattedNum = roundedNum.toLocaleString('ko-KR') + '원';
+    if (roundedNum < 0) {
+        return `<span style="color: #d93025;">${formattedNum}</span>`;
+    }
+    return formattedNum;
+}
+
+function calcInstallment(p){
+    if(p<=0)return 0;
+    let r=0.059/12,n=24;
+    return p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+}
+function validatePlanFee(value, name) {
+    if (value === 0) return "";
+    if (name === '매장 초기 요금제' && (value < 10000 || value > 130000)) {
+        return `[${name}] 요금제는 10,000원 ~ 130,000원 사이로 입력하세요.`;
+    } else if (name !== '매장 초기 요금제' && (value < 10000 || value > 150000)) {
+        return `[${name}] 요금제는 10,000원 ~ 150,000원 사이로 입력하세요.`;
+    }
+    return "";
+}
+
+function toggleCustomMonthsInput() {
+    const extraMode = document.getElementById('storeExtraMode').value;
+    document.getElementById('customExtraMonthsGroup').style.display = extraMode === 'custom' ? 'block' : 'none';
+}
+
+function toggleMaintenanceMonthsInput() {
+    const maintenanceMode = document.getElementById('storePlanMaintenanceMode').value;
+    document.getElementById('customMaintenanceMonthsGroup').style.display = maintenanceMode === 'custom' ? 'block' : 'none';
+}
+
+function updateCarrierCombinedDiscountOptions() {
+    const carrier = document.getElementById('carrier').value;
+    const combinedDiscountSelect = document.getElementById('combinedDiscountType');
+    const premierDiscountGroup = document.getElementById('premierDiscountGroup');
+    combinedDiscountSelect.innerHTML = '<option value="none">결합없음</option>';
+    premierDiscountGroup.style.display = 'none';
+    handleCombinedDiscountChange(); // Hide all optional groups when carrier changes
+
+    if (carrier === 'SKT') {
+        combinedDiscountSelect.innerHTML += '<option value="skt_30_percent">온가족할인 30년이상 30%</option>';
+        combinedDiscountSelect.innerHTML += '<option value="skt_10_percent">온가족할인 30년미만 10%</option>';
+        combinedDiscountSelect.innerHTML += '<option value="skt_fixed_3500">SK요금가족결합 (-3,500원)</option>';
+    } else if (carrier === 'KT') {
+        combinedDiscountSelect.innerHTML += '<option value="kt_premium_single">프리미엄 싱글 결합할인</option>';
+        combinedDiscountSelect.innerHTML += '<option value="kt_premium_family">프리미엄 가족결합</option>';
+    } else if (carrier === 'LGU') {
+        combinedDiscountSelect.innerHTML += '<option value="lgu_together">투게더 결합</option>';
+        combinedDiscountSelect.innerHTML += '<option value="lgu_hanbang">한방에YO</option>';
+        combinedDiscountSelect.innerHTML += '<option value="lgu_easy_family">참 쉬운 가족결합</option>';
+        premierDiscountGroup.style.display = 'block';
+    }
+}
+
+function handleCombinedDiscountChange() {
+    const combinedDiscountType = document.getElementById('combinedDiscountType').value;
+    document.getElementById('lguTogetherGroup').style.display = combinedDiscountType === 'lgu_together' ? 'block' : 'none';
+    document.getElementById('lguEasyFamilyGroup').style.display = combinedDiscountType === 'lgu_easy_family' ? 'block' : 'none';
+    document.getElementById('ktPremiumFamilyGroup').style.display = combinedDiscountType === 'kt_premium_family' ? 'block' : 'none';
+}
+
+function updatePlanList() {
+    const carrier = document.getElementById('unlockedCarrierSelect').value;
+    const planSelect = document.getElementById('unlockedPlanSelect');
+    planSelect.innerHTML = '<option value="">요금제를 선택하세요</option>';
+    document.getElementById('planDescriptionBox').style.display = 'none';
+    const plans = planData[carrier] || [];
+    plans.forEach(plan => {
+        planSelect.innerHTML += `<option value="${plan.name}">${plan.name} (${plan.price.toLocaleString()}원)</option>`;
+    });
+}
+
+function displayPlanDetails() {
+    const carrier = document.getElementById('unlockedCarrierSelect').value;
+    const selectedPlanName = document.getElementById('unlockedPlanSelect').value;
+    const descriptionBox = document.getElementById('planDescriptionBox');
+    if (!selectedPlanName) {
+        descriptionBox.style.display = 'none';
+        return;
+    }
+    const plan = planData[carrier]?.find(p => p.name === selectedPlanName);
+    if (plan) {
+        let description = plan.description;
+        if (description.includes('{YEAR}')) {
+            const currentYear = new Date().getFullYear();
+            const ageMatch = description.match(/만 (\d+)세/);
+            if (ageMatch) {
+                const ageLimit = parseInt(ageMatch[1], 10);
+                const birthYear = (currentYear - ageLimit).toString().slice(-2);
+                description = description.replace(/{YEAR}/g, currentYear).replace(/{BIRTH_YEAR}/g, birthYear);
+            }
+        }
+        descriptionBox.innerText = description;
+        descriptionBox.style.display = 'block';
+    }
+}
+
+function togglePlanList() {
+    const container = document.getElementById('planSelectorContainer');
+    const button = document.getElementById('planListToggleButton');
+    const isVisible = container.style.display === 'block';
+    container.style.display = isVisible ? 'none' : 'block';
+    button.innerText = isVisible ? '요금제 목록 보기' : '요금제 목록 감추기';
+}
+
+function updateCalculationMode() {
+    const mode = document.querySelector('input[name="calcMode"]:checked').value;
+    const unlockedSection = document.getElementById('unlocked-section');
+    const storeTitle = document.getElementById('store-title');
+    const seonyakDevicePriceGroup = document.getElementById('seonyakDevicePriceGroup');
+    const storeContractDurationSelect = document.getElementById('storeContractDuration');
+    const gongsiDevicePriceGroup = document.getElementById('gongsiDevicePriceGroup');
+    const mainCalcButton = document.getElementById('mainCalcButton');
+
+    const leftColumnHeader = document.getElementById('left-column-header');
+    const rightColumnHeader = document.getElementById('right-column-header');
+    const leftColumnCumulativeHeader = document.getElementById('left-column-cumulative-header');
+    const rightColumnCumulativeHeader = document.getElementById('right-column-cumulative-header');
+    const leftColumnTotalLabel = document.getElementById('left-column-total-label');
+    const rightColumnTotalLabel = document.getElementById('right-column-total-label');
+    const diffValueP = document.getElementById('diffValueP');
+    const winnerDiv = document.getElementById('winner');
+
+    // Reset to default state
+    unlockedSection.style.display = 'block';
+    seonyakDevicePriceGroup.style.display = 'none';
+    gongsiDevicePriceGroup.style.display = 'block';
+    storeContractDurationSelect.disabled = false;
+    leftColumnHeader.innerText = '매장 월납(표시)';
+    leftColumnCumulativeHeader.innerText = '매장 누적(표시)';
+    rightColumnHeader.innerText = '자급제 월납';
+    rightColumnCumulativeHeader.innerText = '자급제 누적';
+    leftColumnTotalLabel.innerText = '매장 구매 총비용(표시/누적)';
+    rightColumnTotalLabel.innerText = '자급제 구매 총비용';
+    rightColumnHeader.style.display = '';
+    rightColumnCumulativeHeader.style.display = '';
+    rightColumnTotalLabel.parentElement.style.display = '';
+    diffValueP.style.display = '';
+    winnerDiv.style.display = '';
+    mainCalcButton.onclick = calculate;
+
+    if (mode === 'store_vs_unlocked') {
+        storeTitle.innerText = '🏬 매장 구매';
+    } else if (mode === 'gongsi_vs_seonyak') {
+        unlockedSection.style.display = 'none';
+        storeTitle.innerText = '🏬 공시지원 vs 선택약정';
+        seonyakDevicePriceGroup.style.display = 'block';
+        storeContractDurationSelect.value = 'none';
+        storeContractDurationSelect.disabled = true;
+        leftColumnHeader.innerText = '공시지원 월납(표시)';
+        leftColumnCumulativeHeader.innerText = '공시지원 누적(표시)';
+        rightColumnHeader.innerText = '선택약정 월납(표시)';
+        rightColumnCumulativeHeader.innerText = '선택약정 누적(표시)';
+        leftColumnTotalLabel.innerText = '공시지원 총비용(표시/누적)';
+        rightColumnTotalLabel.innerText = '선택약정 총비용(표시/누적)';
+        mainCalcButton.onclick = calculateGongsiVsSeonyak;
+    } else if (mode === 'gongsi_only' || mode === 'seonyak_only') {
+        unlockedSection.style.display = 'none';
+        storeTitle.innerText = mode === 'gongsi_only' ? '🏬 공시지원금 단독 계산' : '🏬 선택약정 단독 계산';
+        gongsiDevicePriceGroup.style.display = mode === 'gongsi_only' ? 'block' : 'none';
+        seonyakDevicePriceGroup.style.display = mode === 'seonyak_only' ? 'block' : 'none';
+        storeContractDurationSelect.value = 'none';
+        storeContractDurationSelect.disabled = true;
+        leftColumnHeader.innerText = '월납 금액';
+        leftColumnCumulativeHeader.innerText = '누적 금액';
+        rightColumnHeader.style.display = 'none';
+        rightColumnCumulativeHeader.style.display = 'none';
+        leftColumnTotalLabel.innerText = '총비용';
+        rightColumnTotalLabel.parentElement.style.display = 'none';
+        diffValueP.style.display = 'none';
+        winnerDiv.style.display = 'none';
+        mainCalcButton.onclick = mode === 'gongsi_only' ? calculateGongsiOnly : calculateSeonyakOnly;
+    }
+    document.getElementById('result').style.display = 'none';
+}
+
+// ★★★ 할인 계산 로직 수정 ★★★
+function calculateEffectivePlanFeeDetails(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked = false) {
+    if (basePlanFee <= 0) {
+        return { finalFee: 0, discounts: [], order: '' };
+    }
+    
+    const discounts = [];
+    const appliedOrder = [];
+
+    // --- 할인 금액 계산 단계 ---
+    // 각 할인을 먼저 계산하고, 나중에 일괄적으로 차감합니다.
+
+    // 1. 선택약정 할인 금액 계산
+    let selectiveDiscountAmount = 0;
+    let applySeonyak = false;
+    if (isUnlocked) {
+        applySeonyak = isSeonyakSide;
+    } else {
+        if (isSeonyakSide) {
+            applySeonyak = true;
+        } else {
+            if (storeContractDuration === '24' || (storeContractDuration === '12' && month <= 12)) {
+                 applySeonyak = true;
+            } else if (storeContractDuration === 'none') {
+                if (((carrier === 'SKT' || carrier === 'LGU') && month >= 19) || (carrier === 'KT' && month >= 25)) {
+                    applySeonyak = true;
+                }
+            }
+        }
+    }
+    if (applySeonyak) {
+        selectiveDiscountAmount = basePlanFee * 0.25;
+    }
+
+    // 2. 결합 할인 금액 계산
+    let combinedDiscountAmount = 0;
+    let combinedDiscountName = '';
+    if (carrier === 'SKT') {
+        if (combinedDiscountType === 'skt_30_percent') { combinedDiscountAmount = basePlanFee * 0.30; combinedDiscountName = '온가족할인 30년이상 (30%)'; } 
+        else if (combinedDiscountType === 'skt_10_percent') { combinedDiscountAmount = basePlanFee * 0.10; combinedDiscountName = '온가족할인 30년미만 (10%)'; } 
+        else if (combinedDiscountType === 'skt_fixed_3500') { combinedDiscountAmount = 3500; combinedDiscountName = 'SK요금가족결합'; }
+    } else if (carrier === 'KT') {
+        if (combinedDiscountType === 'kt_premium_single' && basePlanFee >= 80000) {
+            combinedDiscountName = '프리미엄 싱글 결합할인';
+            if (basePlanFee >= 130000) combinedDiscountAmount = 32500;
+            else if (basePlanFee >= 110000) combinedDiscountAmount = 27500;
+            else if (basePlanFee >= 100000) combinedDiscountAmount = 25000;
+            else if (basePlanFee >= 90000) combinedDiscountAmount = 22500;
+            else combinedDiscountAmount = 20000;
+        } else if (combinedDiscountType === 'kt_premium_family') {
+            const role = document.querySelector('input[name="ktPremiumRole"]:checked').value;
+            if (role === 'member' && basePlanFee >= 77000) {
+                combinedDiscountAmount = basePlanFee * 0.25;
+                combinedDiscountName = '프리미엄 가족결합 (구성원)';
+            } else if (role === 'base' && basePlanFee >= 77000) {
+                const speed = document.querySelector('input[name="ktInternetSpeed"]:checked').value;
+                const ownPlanFee = basePlanFee;
+                combinedDiscountName = '프리미엄 가족결합 (베이스)';
+                if (speed === '100m') {
+                    if (ownPlanFee >= 174900) combinedDiscountAmount = 23100;
+                    else if (ownPlanFee >= 141900) combinedDiscountAmount = 18700;
+                    else if (ownPlanFee >= 108900) combinedDiscountAmount = 14300;
+                    else if (ownPlanFee >= 64900) combinedDiscountAmount = 3300;
+                    else combinedDiscountAmount = 0;
+                } else { // 500m
+                    if (ownPlanFee >= 174900) combinedDiscountAmount = 27610;
+                    else if (ownPlanFee >= 141900) combinedDiscountAmount = 22110;
+                    else if (ownPlanFee >= 108900) combinedDiscountAmount = 16610;
+                    else if (ownPlanFee >= 64900) combinedDiscountAmount = 5500;
+                    else combinedDiscountAmount = 0;
+                }
+            }
+        }
+    } else if (carrier === 'LGU') {
+        if (combinedDiscountType === 'lgu_together' && basePlanFee >= 85000) {
+            const togetherCount = document.querySelector('input[name="lguTogetherCount"]:checked').value;
+            if (togetherCount === '2') { combinedDiscountAmount = 10000; combinedDiscountName = '투게더 결합 (2인)'; } 
+            else if (togetherCount === '3') { combinedDiscountAmount = 14000; combinedDiscountName = '투게더 결합 (3인)'; } 
+            else if (togetherCount === '4') { combinedDiscountAmount = 20000; combinedDiscountName = '투게더 결합 (4인 이상)'; }
+        } else if (combinedDiscountType === 'lgu_hanbang') {
+            combinedDiscountName = '한방에YO';
+            if (basePlanFee >= 68200) {
+                combinedDiscountAmount = 8800;
+            } else if (basePlanFee >= 10900) {
+                combinedDiscountAmount = 5500;
+            }
+        } else if (combinedDiscountType === 'lgu_easy_family') {
+            const lineCount = document.querySelector('input[name="lguEasyFamilyCount"]:checked').value;
+            combinedDiscountName = `참 쉬운 가족결합 (${lineCount === '4' ? '4~10' : lineCount}회선)`;
+            if (basePlanFee >= 88000) {
+                if (lineCount === '2') combinedDiscountAmount = 4400;
+                else if (lineCount === '3') combinedDiscountAmount = 6600;
+                else if (lineCount === '4') combinedDiscountAmount = 8800;
+            } else if (basePlanFee >= 69000) {
+                if (lineCount === '2') combinedDiscountAmount = 3300;
+                else if (lineCount === '3') combinedDiscountAmount = 5500;
+                else if (lineCount === '4') combinedDiscountAmount = 6600;
+            } else { // < 69,000
+                if (lineCount === '2') combinedDiscountAmount = 2200;
+                else if (lineCount === '3') combinedDiscountAmount = 3300;
+                else if (lineCount === '4') combinedDiscountAmount = 4400;
+            }
+        }
+    }
+
+    // 3. 복지 할인 금액 계산 (새로운 순서 적용)
+    let welfareDiscountAmount = 0;
+    let welfareDiscountName = '';
+    // 복지할인의 기준 금액 = 기본요금 - 결합할인
+    let baseForWelfareCalc = basePlanFee - combinedDiscountAmount; 
+    if (welfareDiscount !== 'none') {
+        const typeMap = { 'disability': '장애등급', 'national_merit': '국가유공자', 'basic_pension': '기초연금 수급자', 'next_lower': '차상위계층', 'basic_lifemed': '기초생활수급자(생계/의료)', 'basic_houseedu': '기초생활수급자(주거/교육)' };
+        welfareDiscountName = `복지할인 (${typeMap[welfareDiscount]})`;
+        if (welfareDiscount === 'disability' || welfareDiscount === 'national_merit') { welfareDiscountAmount = baseForWelfareCalc * 0.35; } 
+        else if (welfareDiscount === 'basic_pension') { welfareDiscountAmount = Math.min(baseForWelfareCalc * 0.5, 12100); } 
+        else if (welfareDiscount === 'next_lower' || welfareDiscount === 'basic_houseedu') { welfareDiscountAmount = Math.min(11000 + Math.max(0, baseForWelfareCalc - 11000) * 0.35, 23650); }
+        else if (welfareDiscount === 'basic_lifemed') { welfareDiscountAmount = Math.min(baseForWelfareCalc, 28600); }
+    }
+
+    // 4. LG U+ 프리미어 요금제 약정 할인
+    let premierDiscountAmount = 0;
+    if (carrier === 'LGU' && premierContractDiscount === 'apply' && basePlanFee >= 85000) {
+        premierDiscountAmount = 5250;
+    }
+
+    // 5. 최종 요금 계산: 기본요금에서 모든 할인액을 차감
+    let finalFee = basePlanFee - selectiveDiscountAmount - combinedDiscountAmount - welfareDiscountAmount - premierDiscountAmount;
+
+    // 6. 표시용 할인 내역 및 순서 생성
+    if (selectiveDiscountAmount > 0) {
+        discounts.push({ name: '선택약정 할인 (25%)', amount: Math.round(selectiveDiscountAmount) });
+        appliedOrder.push("선택약정");
+    }
+    if (combinedDiscountAmount > 0) {
+        discounts.push({ name: combinedDiscountName, amount: Math.round(combinedDiscountAmount) });
+        appliedOrder.push("결합");
+    }
+    if (welfareDiscountAmount > 0) {
+        discounts.push({ name: welfareDiscountName, amount: Math.round(welfareDiscountAmount) });
+        appliedOrder.push("복지");
+    }
+    if (premierDiscountAmount > 0) {
+        discounts.push({ name: '프리미어 요금제 약정할인', amount: premierDiscountAmount });
+        appliedOrder.push("프리미어(LGU)");
+    }
+
+    return {
+        finalFee: Math.max(0, Math.round(finalFee)),
+        discounts: discounts,
+        order: appliedOrder.join(' → ')
+    };
+}
+
+
+// 기존 함수는 새 함수를 호출하여 이전 버전과의 호환성 유지
+function calculateEffectivePlanFee(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked = false) {
+    return calculateEffectivePlanFeeDetails(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked).finalFee;
+}
+
+
+function getInputs() {
+    return {
+        carrier: document.getElementById('carrier').value,
+        storeDevice: +document.getElementById('storeDevicePrice').value,
+        seonyakDevice: +document.getElementById('seonyakDevicePrice').value,
+        paymentMethod: document.getElementById('storePaymentMethod').value,
+        plan6m: +document.getElementById('storePlan6m').value,
+        maintenanceMode: document.getElementById('storePlanMaintenanceMode').value,
+        customMaintenanceMonths: +document.getElementById('customMaintenanceMonths').value,
+        planAfter6m: +document.getElementById('storePlanAfter6m').value,
+        welfareDiscount: document.getElementById('storeWelfareDiscount').value,
+        extraService: +document.getElementById('storeExtraService').value,
+        extraMode: document.getElementById('storeExtraMode').value,
+        customExtraMonths: +document.getElementById('customExtraMonths').value,
+        contractDuration: document.getElementById('storeContractDuration').value,
+        combinedDiscount: document.getElementById('combinedDiscountType').value,
+        premierDiscount: document.getElementById('premierContractDiscount').value,
+        unlockedDevice: +document.getElementById('unlockedDevicePrice').value,
+        unlockedPlan: +document.getElementById('unlockedPlan').value,
+        unlockedWelfare: document.getElementById('unlockedWelfareDiscount').value,
+        unlockedContract: document.getElementById('unlockedContractDiscount').checked,
+    };
+}
+
+// ★★★ 할인 내역 HTML 생성 함수 수정 ★★★
+function generateDiscountBreakdownHTML(title, periods) {
+    if (!periods || periods.length === 0 || periods.every(p => p.fee <= 0)) return '';
+
+    let breakdownHtml = `<div class="breakdown-card"><h4>${title} 할인 내역</h4>`;
+
+    periods.forEach(period => {
+        if (!period.details || period.fee <= 0) return;
+
+        // 기간이 2개 이상일 때만 소제목 표시
+        if (periods.filter(p => p.fee > 0).length > 1) {
+            breakdownHtml += `<h5 style="margin-top:10px; margin-bottom:5px; border-bottom:1px solid #eee; padding-bottom:5px;">${period.periodTitle}</h5>`;
+        }
+        
+        if (period.details.discounts.length === 0) {
+            breakdownHtml += `<p>적용된 할인 항목이 없습니다.</p><p>월 요금: ${format(period.fee)}</p>`;
+        } else {
+            breakdownHtml += `
+                <p><strong>최종 월 요금: <span style="color: #1a73e8;">${format(period.details.finalFee)}</span></strong></p>
+                <p style="font-size: 0.85em; color: #555;">(할인 적용 순서: ${period.details.order})</p>
+                <ul>
+            `;
+            period.details.discounts.forEach(d => {
+                breakdownHtml += `<li>- ${d.name}: ${format(d.amount)}</li>`;
+            });
+            breakdownHtml += '</ul>';
+        }
+    });
+    
+    breakdownHtml += '</div>';
+    return breakdownHtml;
+}
+
+function calculate() {
+    const inputs = getInputs();
+    const errorMessageDiv = document.getElementById('error-message');
+    errorMessageDiv.innerText = '';
+    let error = validatePlanFee(inputs.plan6m, '매장 초기 요금제') || validatePlanFee(inputs.planAfter6m, '유지 기간 이후 요금제') || validatePlanFee(inputs.unlockedPlan, '자급제 요금제');
+    if (error) { errorMessageDiv.innerText = error; return; }
+
+    const actualMaintenanceMonths = inputs.maintenanceMode === 'custom' ? inputs.customMaintenanceMonths : parseInt(inputs.maintenanceMode);
+    const deviceCost = Math.max(0, inputs.storeDevice);
+    const deviceSubsidy = Math.min(0, inputs.storeDevice);
+    const storeDeviceMonth = inputs.paymentMethod === 'installment' ? calcInstallment(deviceCost) : 0;
+    const duration = 24; // '매장 vs 자급제'는 24개월 비교로 고정
+    document.getElementById('result-title').innerText = `📊 최종 비교 결과 (${duration}개월)`;
+
+    let cumStoreDisplay = 0, cumStoreCompare = 0, cumUnlocked = 0, rows = '';
+    
+    const unlockedPayDisplay = calculateEffectivePlanFee(inputs.unlockedPlan, 'SKT', 'none', inputs.unlockedWelfare, 'none', 1, inputs.unlockedContract, 'none', true);
+    cumUnlocked = inputs.unlockedDevice;
+
+    for (let m = 1; m <= duration; m++) {
+        const basePlanFee = m <= actualMaintenanceMonths ? inputs.plan6m : inputs.planAfter6m;
+        const finalStorePlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, m, false, inputs.premierDiscount, false);
+        
+        let extraThisMonth = 0;
+        const actualExtraMonths = inputs.extraMode === 'custom' ? inputs.customExtraMonths : (inputs.extraMode.includes('months') ? parseInt(inputs.extraMode) : 0);
+        if ((inputs.extraMode !== 'none' && m <= actualExtraMonths) || inputs.extraMode === 'monthly') {
+            extraThisMonth = inputs.extraService;
+        }
+        
+        let storePayDisplay = finalStorePlanFee + storeDeviceMonth + extraThisMonth;
+        let storePayRaw = storePayDisplay;
+        if (m === 1) {
+            if (inputs.paymentMethod === 'lump_sum') storePayRaw += deviceCost;
+            storePayRaw += deviceSubsidy;
+        }
+        cumStoreDisplay += storePayDisplay;
+        cumStoreCompare += storePayRaw;
+        cumUnlocked += unlockedPayDisplay;
+        
+        rows += `<tr><td>${m}</td><td>${format(storePayDisplay)}</td><td>${format(cumStoreDisplay)}</td><td>${format(unlockedPayDisplay)}</td><td>${format(cumUnlocked)}</td></tr>`;
+    }
+
+    // ★★★ 할인 내역 생성 로직 수정 ★★★
+    const breakdownDiv = document.getElementById('discount-breakdown');
+    let breakdownHTML = '';
+    const storePeriods = [];
+    const midPeriodStart = actualMaintenanceMonths + 1;
+
+    // 매장 구매 - 초기
+    storePeriods.push({
+        periodTitle: `초기 유지 기간 (1~${actualMaintenanceMonths}개월)`,
+        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, 1, false, inputs.premierDiscount, false),
+        fee: inputs.plan6m
+    });
+
+    // 매장 구매 - 이후
+    if ((inputs.carrier === 'SKT' || inputs.carrier === 'LGU') && inputs.contractDuration === 'none') {
+        if (midPeriodStart < 19) {
+            storePeriods.push({
+                periodTitle: `중간 기간 (${midPeriodStart}~18개월)`,
+                details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false),
+                fee: inputs.planAfter6m
+            });
+        }
+        storePeriods.push({
+            periodTitle: `선택약정 전환 기간 (19~24개월)`,
+            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false),
+            fee: inputs.planAfter6m
+        });
+    } else {
+        storePeriods.push({
+            periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`,
+            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false),
+            fee: inputs.planAfter6m
+        });
+    }
+    breakdownHTML += generateDiscountBreakdownHTML('매장 구매', storePeriods);
+
+    // 자급제 구매
+    const unlockedPeriods = [{
+        periodTitle: '자급제 요금',
+        details: calculateEffectivePlanFeeDetails(inputs.unlockedPlan, 'SKT', 'none', inputs.unlockedWelfare, 'none', 1, inputs.unlockedContract, 'none', true),
+        fee: inputs.unlockedPlan
+    }];
+    breakdownHTML += generateDiscountBreakdownHTML('자급제 구매', unlockedPeriods);
+    
+    breakdownDiv.innerHTML = breakdownHTML;
+    breakdownDiv.style.display = 'flex';
+
+    // ★★★ 단말기 가격 표시 로직 추가 ★★★
+    const devicePriceDiv = document.getElementById('device-price-comparison');
+    devicePriceDiv.style.display = 'block';
+    document.getElementById('left-column-device-label').innerText = '매장 구매가';
+    document.getElementById('right-column-device-label').innerText = '자급제 구매가';
+    document.getElementById('storeDevicePriceResult').innerHTML = formatWithColor(inputs.storeDevice);
+    document.getElementById('unlockedDevicePriceResult').innerHTML = formatWithColor(inputs.unlockedDevice);
+
+    // ★★★ 월 할부금 표시 로직 추가 ★★★
+    const installmentInfoP = document.getElementById('installment-info');
+    if (inputs.paymentMethod === 'installment' && inputs.storeDevice > 0) {
+        const storeInstallment = calcInstallment(Math.max(0, inputs.storeDevice));
+        installmentInfoP.innerText = `월 할부금은 ${format(storeInstallment)} 입니다 (원리금균등 5.9%적용)`;
+        installmentInfoP.style.display = 'block';
+    } else {
+        installmentInfoP.style.display = 'none';
+    }
+
+    document.getElementById('monthly').innerHTML = rows;
+    document.getElementById('storeTotal').innerText = format(cumStoreCompare);
+    document.getElementById('unlockedTotal').innerText = format(cumUnlocked);
+    document.getElementById('diffValue').innerHTML = formatWithColor(cumStoreCompare - cumUnlocked);
+    
+    const winnerEl = document.getElementById('winner');
+    if (cumStoreCompare < cumUnlocked) winnerEl.innerText = `🎉 매장이 ${Math.abs(Math.round(cumUnlocked - cumStoreCompare)).toLocaleString('ko-KR')}원 더 저렴합니다!`;
+    else if (cumStoreCompare > cumUnlocked) winnerEl.innerText = `🎉 자급제가 ${Math.abs(Math.round(cumStoreCompare - cumUnlocked)).toLocaleString('ko-KR')}원 더 저렴합니다!`;
+    else winnerEl.innerText = '두 방법의 비교 결과가 동일합니다.';
+    
+    document.getElementById('result').style.display = 'block';
+}
+
+function calculateGongsiVsSeonyak() {
+    const inputs = getInputs();
+    const errorMessageDiv = document.getElementById('error-message');
+    errorMessageDiv.innerText = '';
+    let error = validatePlanFee(inputs.plan6m, '매장 초기 요금제') || validatePlanFee(inputs.planAfter6m, '유지 기간 이후 요금제');
+    if (error) { errorMessageDiv.innerText = error; return; }
+
+    const actualMaintenanceMonths = inputs.maintenanceMode === 'custom' ? inputs.customMaintenanceMonths : parseInt(inputs.maintenanceMode);
+    const deviceCostGongsi = Math.max(0, inputs.storeDevice), subsidyGongsi = Math.min(0, inputs.storeDevice);
+    let deviceMonthGongsi = inputs.paymentMethod === 'installment' ? calcInstallment(deviceCostGongsi) : 0;
+    const deviceCostSeonyak = Math.max(0, inputs.seonyakDevice), subsidySeonyak = Math.min(0, inputs.seonyakDevice);
+    let deviceMonthSeonyak = inputs.paymentMethod === 'installment' ? calcInstallment(deviceCostSeonyak) : 0;
+    const duration = 24;
+    document.getElementById('result-title').innerText = `📊 최종 비교 결과 (${duration}개월)`;
+
+    let cumGongsiDisplay = 0, cumGongsiCompare = 0, cumSeonyakDisplay = 0, cumSeonyakCompare = 0, rows = '';
+
+    for (let m = 1; m <= duration; m++) {
+        const basePlanFee = m <= actualMaintenanceMonths ? inputs.plan6m : inputs.planAfter6m;
+        let extraThisMonth = 0;
+        const actualExtraMonths = inputs.extraMode === 'custom' ? inputs.customExtraMonths : (inputs.extraMode.includes('months') ? parseInt(inputs.extraMode) : 0);
+        if ((inputs.extraMode !== 'none' && m <= actualExtraMonths) || inputs.extraMode === 'monthly') {
+            extraThisMonth = inputs.extraService;
+        }
+
+        let finalGongsiPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, m, false, inputs.premierDiscount, false);
+        let gongsiPayDisplay = finalGongsiPlanFee + deviceMonthGongsi + extraThisMonth;
+        let gongsiPayRaw = gongsiPayDisplay;
+        if (m === 1) { if (inputs.paymentMethod === 'lump_sum') gongsiPayRaw += deviceCostGongsi; gongsiPayRaw += subsidyGongsi; }
+        cumGongsiDisplay += gongsiPayDisplay;
+        cumGongsiCompare += gongsiPayRaw;
+
+        let finalSeonyakPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, m, true, inputs.premierDiscount, false);
+        let seonyakPayDisplay = finalSeonyakPlanFee + deviceMonthSeonyak + extraThisMonth;
+        let seonyakPayRaw = seonyakPayDisplay;
+        if (m === 1) { if (inputs.paymentMethod === 'lump_sum') seonyakPayRaw += deviceCostSeonyak; seonyakPayRaw += subsidySeonyak; }
+        cumSeonyakDisplay += seonyakPayDisplay;
+        cumSeonyakCompare += seonyakPayRaw;
+
+        rows += `<tr><td>${m}</td><td>${format(gongsiPayDisplay)}</td><td>${format(cumGongsiDisplay)}</td><td>${format(seonyakPayDisplay)}</td><td>${format(cumSeonyakDisplay)}</td></tr>`;
+    }
+    
+    // ★★★ 할인 내역 생성 및 표시 ★★★
+    const breakdownDiv = document.getElementById('discount-breakdown');
+    let breakdownHTML = '';
+    const midPeriodStart = actualMaintenanceMonths + 1;
+
+    // 공시지원 측
+    const gongsiPeriods = [];
+    gongsiPeriods.push({
+        periodTitle: `초기 유지 기간 (1~${actualMaintenanceMonths}개월)`,
+        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 1, false, inputs.premierDiscount, false),
+        fee: inputs.plan6m
+    });
+    if ((inputs.carrier === 'SKT' || inputs.carrier === 'LGU')) {
+        if (midPeriodStart < 19) {
+            gongsiPeriods.push({ periodTitle: `중간 기간 (${midPeriodStart}~18개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+        }
+        gongsiPeriods.push({ periodTitle: `선택약정 전환 기간 (19~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+    } else { // KT
+        gongsiPeriods.push({ periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+    }
+    breakdownHTML += generateDiscountBreakdownHTML('공시지원', gongsiPeriods);
+
+    // 선택약정 측
+    const seonyakPeriods = [];
+    seonyakPeriods.push({
+        periodTitle: `초기 유지 기간 (1~${actualMaintenanceMonths}개월)`,
+        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, 1, true, inputs.premierDiscount, false),
+        fee: inputs.plan6m
+    });
+    seonyakPeriods.push({
+        periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`,
+        details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, true, inputs.premierDiscount, false),
+        fee: inputs.planAfter6m
+    });
+    breakdownHTML += generateDiscountBreakdownHTML('선택약정', seonyakPeriods);
+    
+    breakdownDiv.innerHTML = breakdownHTML;
+    breakdownDiv.style.display = 'flex';
+    
+    // ★★★ 단말기 가격 표시 로직 추가 ★★★
+    const devicePriceDiv = document.getElementById('device-price-comparison');
+    devicePriceDiv.style.display = 'block';
+    document.getElementById('left-column-device-label').innerText = '공시지원 구매가';
+    document.getElementById('right-column-device-label').innerText = '선택약정 구매가';
+    document.getElementById('storeDevicePriceResult').innerHTML = formatWithColor(inputs.storeDevice);
+    document.getElementById('unlockedDevicePriceResult').innerHTML = formatWithColor(inputs.seonyakDevice);
+
+    // ★★★ 월 할부금 표시 로직 추가 ★★★
+    const installmentInfoP = document.getElementById('installment-info');
+    if (inputs.paymentMethod === 'installment') {
+        let installmentText = '';
+        if (inputs.storeDevice > 0) {
+            const gongsiInstallment = calcInstallment(Math.max(0, inputs.storeDevice));
+            installmentText += `공시지원 월 할부금: ${format(gongsiInstallment)}`;
+        }
+        if (inputs.seonyakDevice > 0) {
+            const seonyakInstallment = calcInstallment(Math.max(0, inputs.seonyakDevice));
+            if (installmentText) installmentText += ' / ';
+            installmentText += `선택약정 월 할부금: ${format(seonyakInstallment)}`;
+        }
+
+        if (installmentText) {
+            installmentInfoP.innerText = `${installmentText} (원리금균등 5.9%적용)`;
+            installmentInfoP.style.display = 'block';
+        } else {
+            installmentInfoP.style.display = 'none';
+        }
+    } else {
+        installmentInfoP.style.display = 'none';
+    }
+
+    document.getElementById('monthly').innerHTML = rows;
+    document.getElementById('storeTotal').innerText = format(cumGongsiCompare);
+    document.getElementById('unlockedTotal').innerText = format(cumSeonyakCompare);
+    document.getElementById('diffValue').innerHTML = formatWithColor(cumGongsiCompare - cumSeonyakCompare);
+    
+    const winnerEl = document.getElementById('winner');
+    if (cumGongsiCompare < cumSeonyakCompare) winnerEl.innerText = `🎉 공시지원이 ${Math.abs(Math.round(cumSeonyakCompare - cumGongsiCompare)).toLocaleString('ko-KR')}원 더 저렴합니다!`;
+    else if (cumGongsiCompare > cumSeonyakCompare) winnerEl.innerText = `🎉 선택약정이 ${Math.abs(Math.round(cumGongsiCompare - cumSeonyakCompare)).toLocaleString('ko-KR')}원 더 저렴합니다!`;
+    else winnerEl.innerText = '두 방법의 비교 결과가 동일합니다.';
+    
+    document.getElementById('result').style.display = 'block';
+}
+
+function calculateSingleMode(isGongsi) {
+    const inputs = getInputs();
+    const errorMessageDiv = document.getElementById('error-message');
+    errorMessageDiv.innerText = '';
+    let error = validatePlanFee(inputs.plan6m, '매장 초기 요금제') || validatePlanFee(inputs.planAfter6m, '유지 기간 이후 요금제');
+    if (error) { errorMessageDiv.innerText = error; return; }
+
+    const actualMaintenanceMonths = inputs.maintenanceMode === 'custom' ? inputs.customMaintenanceMonths : parseInt(inputs.maintenanceMode);
+    const deviceValue = isGongsi ? inputs.storeDevice : inputs.seonyakDevice;
+    const deviceCost = Math.max(0, deviceValue), deviceSubsidy = Math.min(0, deviceValue);
+    const deviceMonth = inputs.paymentMethod === 'installment' ? calcInstallment(deviceCost) : 0;
+    const duration = 24;
+    document.getElementById('result-title').innerText = `📊 ${isGongsi ? '공시지원' : '선택약정'} 단독 계산 결과 (${duration}개월)`;
+
+    let cumDisplay = 0, cumCompare = 0, rows = '';
+
+    for (let m = 1; m <= duration; m++) {
+        const basePlanFee = m <= actualMaintenanceMonths ? inputs.plan6m : inputs.planAfter6m;
+        let extraThisMonth = 0;
+        const actualExtraMonths = inputs.extraMode === 'custom' ? inputs.customExtraMonths : (inputs.extraMode.includes('months') ? parseInt(inputs.extraMode) : 0);
+        if ((inputs.extraMode !== 'none' && m <= actualExtraMonths) || inputs.extraMode === 'monthly') {
+            extraThisMonth = inputs.extraService;
+        }
+        
+        const finalPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, m, !isGongsi, inputs.premierDiscount, false);
+        
+        let payDisplay = finalPlanFee + deviceMonth + extraThisMonth;
+        let payRaw = payDisplay;
+        if (m === 1) { if (inputs.paymentMethod === 'lump_sum') payRaw += deviceCost; payRaw += deviceSubsidy; }
+        cumDisplay += payDisplay;
+        cumCompare += payRaw;
+        
+        rows += `<tr><td>${m}</td><td>${format(payDisplay)}</td><td>${format(cumDisplay)}</td></tr>`;
+    }
+
+    // ★★★ 할인 내역 생성 및 표시 ★★★
+    const breakdownDiv = document.getElementById('discount-breakdown');
+    const periods = [];
+    const midPeriodStart = actualMaintenanceMonths + 1;
+
+    periods.push({
+        periodTitle: `초기 유지 기간 (1~${actualMaintenanceMonths}개월)`,
+        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, 1, !isGongsi, inputs.premierDiscount, false),
+        fee: inputs.plan6m
+    });
+
+    if (isGongsi && (inputs.carrier === 'SKT' || inputs.carrier === 'LGU')) {
+        if (midPeriodStart < 19) {
+            periods.push({ periodTitle: `중간 기간 (${midPeriodStart}~18개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+        }
+        periods.push({ periodTitle: `선택약정 전환 기간 (19~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+    } else {
+        periods.push({
+            periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`,
+            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, !isGongsi, inputs.premierDiscount, false),
+            fee: inputs.planAfter6m
+        });
+    }
+    
+    let breakdownHTML = generateDiscountBreakdownHTML(isGongsi ? '공시지원' : '선택약정', periods);
+    
+    breakdownDiv.innerHTML = breakdownHTML;
+    breakdownDiv.style.display = 'flex';
+
+    document.getElementById('device-price-comparison').style.display = 'none'; // 단독 계산 시 숨김
+
+    // ★★★ 월 할부금 표시 로직 추가 ★★★
+    const installmentInfoP = document.getElementById('installment-info');
+    if (inputs.paymentMethod === 'installment' && deviceValue > 0) {
+        const installment = calcInstallment(Math.max(0, deviceValue));
+        installmentInfoP.innerText = `월 할부금은 ${format(installment)} 입니다 (원리금균등 5.9%적용)`;
+        installmentInfoP.style.display = 'block';
+    } else {
+        installmentInfoP.style.display = 'none';
+    }
+
+    document.getElementById('monthly').innerHTML = rows;
+    document.getElementById('storeTotal').innerText = format(cumCompare);
+    document.getElementById('result').style.display = 'block';
+}
+
+function calculateGongsiOnly() { calculateSingleMode(true); }
+function calculateSeonyakOnly() { calculateSingleMode(false); }
+
+function calculateGongsiPenalty(gongsiReceived, monthsUsed) {
+    if (monthsUsed > 24) return 0;
+    else if (monthsUsed <= 6) return gongsiReceived;
+    else return Math.round(gongsiReceived * (24 - monthsUsed) / 18);
+}
+
+function calculateSeonyak24Penalty(planFee, monthsUsed) {
+    if (monthsUsed >= 24) return 0;
+    else if (monthsUsed <= 6) return Math.floor((planFee * 0.25) * monthsUsed);
+    else return Math.floor((planFee * 0.25) * monthsUsed * ((24 - monthsUsed) / 18));
+}
+
+function calculateSeonyak12Penalty(planFee, monthsUsed) {
+    if (monthsUsed >= 12) return 0;
+    else if (monthsUsed <= 3) return Math.floor((planFee * 0.25) * monthsUsed);
+    else return Math.floor((planFee * 0.25) * monthsUsed * ((12 - monthsUsed) / 9));
+}
+
+function calculateAdditionalSupportPenalty(amount, monthsUsed) {
+    if (monthsUsed > 24) return 0;
+    else if (monthsUsed <= 6) return amount;
+    else return Math.round(amount * (24 - monthsUsed) / 18);
+}
+
+
+function calculateAllPenaltiesInTable() {
+    const errorMessageDiv = document.getElementById('error-message');
+    errorMessageDiv.innerText = '';
+
+    const gongsiReceived = +document.getElementById('penaltyGongsiReceived').value;
+    const seonyak24PlanFee = +document.getElementById('penaltySeonyak24PlanFee').value;
+    const seonyak12PlanFee = +document.getElementById('penaltySeonyak12PlanFee').value;
+    const additionalAmount = +document.getElementById('penaltyAdditionalAmount').value;
+
+    const penaltyMonthlyResultsBody = document.getElementById('penaltyMonthlyResults');
+    penaltyMonthlyResultsBody.innerHTML = ''; // Clear previous results
+
+    for (let m = 1; m <= 24; m++) {
+        const gongsiPenalty = calculateGongsiPenalty(gongsiReceived, m);
+        const seonyak24Penalty = calculateSeonyak24Penalty(seonyak24PlanFee, m);
+        const seonyak12Penalty = (m <= 12) ? calculateSeonyak12Penalty(seonyak12PlanFee, m) : 0;
+        const additionalPenalty = calculateAdditionalSupportPenalty(additionalAmount, m);
+        
+        const totalMonthlyPenalty = gongsiPenalty + seonyak24Penalty + seonyak12Penalty + additionalPenalty;
+
+        const row = penaltyMonthlyResultsBody.insertRow();
+        row.insertCell().innerText = m + '개월차';
+        row.insertCell().innerText = format(gongsiPenalty);
+        row.insertCell().innerText = format(additionalPenalty);
+        row.insertCell().innerText = format(seonyak24Penalty);
+        row.insertCell().innerText = format(seonyak12Penalty);
+        row.insertCell().innerText = format(totalMonthlyPenalty);
+    }
+    
+    document.getElementById('penalty-table-summary').innerHTML = '';
+    document.getElementById('penalty-calc-table-wrapper').style.display = 'block';
+}
+
+
+function printResultTable() {
+    const mainResultSection = document.getElementById('result');
+    const penaltyCalculatorWrapper = document.getElementById('penalty-calculator-wrapper');
+    const errorMessageDiv = document.getElementById('error-message');
+    errorMessageDiv.innerText = '';
+
+    const isMainCalculatorVisible = document.getElementById('main-calculator-content-wrapper').style.display !== 'none';
+    const isPenaltyCalculatorVisible = penaltyCalculatorWrapper.style.display !== 'none';
+
+    if (isMainCalculatorVisible && mainResultSection.style.display !== 'none') {
+        window.print();
+    } else if (isPenaltyCalculatorVisible && document.getElementById('penalty-calc-table-wrapper').style.display !== 'none') {
+        window.print();
+    } else {
+        errorMessageDiv.innerText = '먼저 계산 결과를 확인해주세요.';
+    }
+}
+
+
+async function shareResultTable() {
+    const mainResultSection = document.getElementById('result');
+    const penaltyCalculatorWrapper = document.getElementById('penalty-calculator-wrapper');
+    const errorMessageDiv = document.getElementById('error-message');
+    
+    let sectionToCapture = null;
+    let captureTitle = '';
+
+    if (mainResultSection.style.display !== 'none') {
+        sectionToCapture = mainResultSection;
+        captureTitle = '요금 계산기 결과';
+    } else if (penaltyCalculatorWrapper.style.display !== 'none') {
+        sectionToCapture = document.getElementById('penalty-calc-table-wrapper');
+        captureTitle = '위약금 계산기 결과';
+        if (sectionToCapture.style.display === 'none') {
+            errorMessageDiv.innerText = '위약금 계산 결과를 먼저 확인해주세요.';
+            return;
+        }
+    } else {
+        errorMessageDiv.innerText = '먼저 계산 결과를 확인해주세요.';
+        return;
+    }
+
+    errorMessageDiv.innerText = '공유 이미지를 생성 중입니다...';
+
+    const isMobileView = document.body.classList.contains('mobile-view');
+    
+    let captureWidth = 0;
+    let captureHeight = 0;
+
+    if (isMobileView) {
+        captureWidth = 720;
+        captureHeight = 1560;
+    } else {
+        captureWidth = 1280;
+        captureHeight = 720;
+    }
+
+    const captureContainer = document.createElement('div');
+    
+    Object.assign(captureContainer.style, {
+        position: 'absolute', left: '-9999px', top: '0',
+        width: `${captureWidth}px`, height: `${captureHeight}px`,
+        padding: '20px', backgroundColor: '#fff',
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
+        overflow: 'hidden'
+    });
+    
+    const clonedSection = sectionToCapture.cloneNode(true);
+    Object.assign(clonedSection.style, {
+        width: '100%', height: 'auto', margin: '0',
+        display: 'block'
+    });
+    
+    if (sectionToCapture.id === 'penalty-calc-table-wrapper') {
+        const tempWrapper = document.createElement('div');
+        tempWrapper.style.width = '100%';
+        tempWrapper.style.height = 'auto';
+        tempWrapper.style.display = 'block';
+
+        const title = document.createElement('h2');
+        title.innerText = '위약금 계산기 결과';
+        title.style.textAlign = 'center';
+        title.style.color = '#1a73e8';
+        title.style.marginBottom = '20px';
+        tempWrapper.appendChild(title);
+        tempWrapper.appendChild(clonedSection);
+        captureContainer.appendChild(tempWrapper);
+
+    } else {
+        captureContainer.appendChild(clonedSection);
+    }
+
+    document.body.appendChild(captureContainer);
+
+    try {
+        const canvas = await html2canvas(captureContainer, {
+            scale: 2, useCORS: true,
+            width: captureWidth, height: captureHeight,
+            windowWidth: captureWidth, windowHeight: captureHeight
+        });
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        const file = new File([blob], '요금계산_결과.png', { type: 'image/png' });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: captureTitle,
+                text: '요금 계산 결과입니다.'
+            });
+            errorMessageDiv.innerText = '';
+        } else {
+            errorMessageDiv.innerText = '웹 공유 API를 지원하지 않는 브라우저입니다.';
+        }
+    } catch (error) {
+        console.error('공유 이미지 생성 실패:', error);
+        errorMessageDiv.innerText = '공유 이미지 생성에 실패했습니다.';
+    } finally {
+        document.body.removeChild(captureContainer);
+    }
+}
+
+
+function resetCalculator() {
+    document.querySelectorAll('#main-calculator-content-wrapper input[type="number"]').forEach(input => input.value = '0');
+    document.querySelectorAll('#main-calculator-content-wrapper select').forEach(select => select.selectedIndex = 0);
+    document.getElementById('unlockedContractDiscount').checked = true;
+    document.getElementById('modeStoreVsUnlocked').checked = true;
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('discount-breakdown').style.display = 'none';
+    document.getElementById('lguTogetherGroup').style.display = 'none';
+    document.getElementById('lguEasyFamilyGroup').style.display = 'none';
+    document.getElementById('ktPremiumFamilyGroup').style.display = 'none';
+
+    document.getElementById('penaltyGongsiReceived').value = '0';
+    document.getElementById('penaltySeonyak24PlanFee').value = '0';
+    document.getElementById('penaltySeonyak12PlanFee').value = '0';
+    document.getElementById('penaltyAdditionalAmount').value = '0';
+    document.getElementById('penaltyMonthlyResults').innerHTML = '';
+    
+    const penaltyTableSummary = document.getElementById('penalty-table-summary');
+    if (penaltyTableSummary) {
+        penaltyTableSummary.innerHTML = '';
+    }
+    document.getElementById('penalty-calc-table-wrapper').style.display = 'none';
+
+    document.getElementById('error-message').innerText = '';
+    updatePlanList();
+    toggleMaintenanceMonthsInput();
+    toggleCustomMonthsInput();
+    updateCarrierCombinedDiscountOptions();
+    updateCalculationMode();
+    setMainCalculatorLayout();
+}
+
+function setMainCalculatorLayout() {
+    document.getElementById('main-calculator-content-wrapper').style.display = 'flex';
+    document.getElementById('comparison-toggle').style.display = 'block';
+    document.getElementById('mainCalcButton').style.display = 'block';
+    document.getElementById('penalty-calculator-wrapper').style.display = 'none';
+    document.getElementById('result').style.display = 'none';
+
+    document.getElementById('mainCalcViewBtn').classList.add('active');
+    document.getElementById('penaltyCalcViewBtn').classList.remove('active');
+    document.getElementById('pcViewBtn').classList.remove('active');
+    document.getElementById('mobileViewBtn').classList.remove('active');
+
+    if (document.body.classList.contains('mobile-view')) {
+        setMobileLayout();
+    } else {
+        setPCLayout();
+    }
+}
+
+function setPenaltyLayout() {
+    document.getElementById('main-calculator-content-wrapper').style.display = 'none';
+    document.getElementById('comparison-toggle').style.display = 'none';
+    document.getElementById('mainCalcButton').style.display = 'none';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('penalty-calculator-wrapper').style.display = 'block';
+    document.getElementById('penalty-calc-table-wrapper').style.display = 'none';
+
+    document.getElementById('penaltyCalcViewBtn').classList.add('active');
+    document.getElementById('mainCalcViewBtn').classList.remove('active');
+    document.getElementById('pcViewBtn').classList.remove('active');
+    document.getElementById('mobileViewBtn').classList.remove('active');
+
+    if (document.body.classList.contains('mobile-view')) {
+        setMobileLayout();
+    } else {
+        setPCLayout();
+    }
+}
+
+function setMobileLayout() {
+    document.body.classList.add('mobile-view');
+    document.getElementById('mobileViewBtn').classList.add('active');
+    document.getElementById('pcViewBtn').classList.remove('active');
+}
+
+function setPCLayout() {
+    document.body.classList.remove('mobile-view');
+    document.getElementById('pcViewBtn').classList.add('active');
+    document.getElementById('mobileViewBtn').classList.remove('active');
+}
+
+window.onload = function() {
+    updatePlanList();
+    toggleMaintenanceMonthsInput();
+    toggleCustomMonthsInput();
+    updateCarrierCombinedDiscountOptions();
+    updateCalculationMode();
+    setMainCalculatorLayout();
+
+    // ★★★ 푸터 내용 동적 생성 ★★★
+    const footer = document.getElementById('page-footer');
+    if (footer) {
+        const currentYear = new Date().getFullYear();
+        footer.innerHTML = `
+            <p>&copy; ${currentYear} kakarus_k. All rights reserved.</p>
+            <p>문의: <a href="mailto:todaypeople234@gmail.com">todaypeople234@gmail.com</a></p>
+        `;
+    }
+};
+</script>
+</body>
+</html>
