@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>요금계산기ver2.8</title>
+<title>요금계산기ver2.9</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <!-- html2canvas 라이브러리 추가 -->
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -47,12 +47,17 @@
     }
     .tooltip-icon:hover .tooltip-text { visibility: visible; opacity: 1; }
 
-    /* ★★★ 오른쪽 상단 버튼 컨테이너 ★★★ */
+    /* ★★★ 오른쪽 상단 버튼 컨테이너 (레이아웃 수정) ★★★ */
     .top-right-buttons {
-        position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 10;
     }
     .icon-button {
-        background: none; border: none; font-size: 2.2em; color: #6c757d; cursor: pointer;
+        background: none; border: none; font-size: 1.6em; /* 크기 조정 */ color: #6c757d; cursor: pointer;
         transition: color 0.3s ease; display: flex; flex-direction: column;
         align-items: center; justify-content: center; padding: 5px; line-height: 1;
     }
@@ -99,7 +104,7 @@
     .modal-content h2 { margin-top: 0; }
     .modal-content h3 { color: #1a73e8; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 20px; }
     .modal-content p, .modal-content li { line-height: 1.7; color: #333; }
-    .modal-content strong { color: #d93025; }
+    .modal-content strong { color: #000; }
     
     /* ★★★ 날짜 계산기 모달 내부 스타일 ★★★ */
     .date-calculator {
@@ -169,8 +174,8 @@
     body.mobile-view .tooltip-text { width: 140px; margin-left: -70px; left: 50%; bottom: 110%; font-size: 0.75em; }
     
     /* UI 수정: 모바일 버튼 크기 및 위치 조정 */
-    body.mobile-view .top-right-buttons { top: 15px; right: 10px; gap: 5px; }
-    body.mobile-view .icon-button { font-size: 1.6em; }
+    body.mobile-view .top-right-buttons { top: 15px; right: 10px; gap: 8px; }
+    body.mobile-view .icon-button { font-size: 1.3em; /* 크기 조정 */ }
     body.mobile-view .icon-button span { font-size: 0.4em; }
     body.mobile-view .action-buttons { top: 15px; left: 10px; gap: 5px; }
     body.mobile-view .action-buttons button { padding: 6px 10px; font-size: 0.8em; }
@@ -383,15 +388,15 @@
 </head>
 <body>
 <div class="container">
-<!-- ★★★ 오른쪽 상단 버튼들 ★★★ -->
+<!-- ★★★ 오른쪽 상단 버튼들 (레이아웃 수정) ★★★ -->
 <div class="top-right-buttons">
-    <button class="icon-button" onclick="openDateCalcModal()" title="날짜 계산기">
-        <i class="fas fa-calendar-alt"></i>
-        <span>(날짜계산)</span>
-    </button>
     <button class="icon-button" onclick="openHelpModal()" title="도움말">
         <i class="fas fa-question-circle"></i>
         <span>(안내)</span>
+    </button>
+    <button class="icon-button" onclick="openDateCalcModal()" title="날짜 계산기">
+        <i class="fas fa-calendar-alt"></i>
+        <span>(날짜계산)</span>
     </button>
     <button class="icon-button" onclick="resetCalculator()" title="초기화">
         <i class="fas fa-redo-alt"></i>
@@ -405,7 +410,7 @@
     <button id="shareButton" onclick="shareResultTable()">🔗 공유하기</button>
 </div>
 
-<h1>요금계산기ver2.8 📱</h1>
+<h1>요금계산기ver2.9 📱</h1>
 
 <div class="view-mode-buttons">
     <button id="mainCalcViewBtn" class="active" onclick="setMainCalculatorLayout()">요금 계산기</button>
@@ -675,6 +680,9 @@
     
     <!-- ★★★ 월 할부금 표시 영역 추가 ★★★ -->
     <p id="installment-info" style="display:none; text-align: center; font-weight: bold; color: #1a73e8; margin-top: 15px;"></p>
+    
+    <!-- ★★★ 일할계산 안내 문구 추가 ★★★ -->
+    <p id="proration-info" style="text-align: center; font-size: 0.9em; color: #555; margin-top: 15px;"></p>
 
     <!-- ★★★ 단말기 구매 가격 비교 섹션 추가 ★★★ -->
     <div id="device-price-comparison" style="display:none; text-align: center; margin: 15px 0; padding: 10px; background: #fff; border-radius: 8px; border: 1px dashed #1a73e8;">
@@ -862,7 +870,7 @@ const planData = {
         { name: '5G슬림 21GB', price: 58000, description: `📞 무제한 ✉️ 무제한 📶 21GB\n- 기본 데이터 21GB 소진 시 1Mbps` },
         { name: '5G슬림 30GB', price: 61000, description: `📞 무제한 ✉️ 무제한 📶 30GB\n- 기본 데이터 30GB 소진 시 1Mbps` },
         { name: '5G슬림 50GB', price: 63000, description: `📞 무제한 ✉️ 무제한 📶 50GB\n- 기본 데이터 50GB 소진 시 1Mbps` },
-        { name: '5G슬림 70GB', price: 65000, description: `📞 무제한 ✉️ 무제한 📶 70GB\n- 기본 데이터 70GB 소진 시 1Mbps` },
+        { name: '5G슬림 70GB', price: 65000, description: `📞 무제한 ✉️ 무제한 📶 70GB\n- 基本数据 70GB 耗尽时 1Mbps` },
         { name: '5G슬림 90GB', price: 67000, description: `📞 무제한 ✉️ 무제한 📶 90GB\n- 기본 데이터 90GB 소진 시 1Mbps` },
         { name: '5G슬림 110GB', price: 69000, description: `📞 무제한 ✉️ 무제한 📶 110GB\n- 기본 데이터 110GB 소진 시 1Mbps` },
         { name: '5G 베이직', price: 80000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n- 데이터 완전 무제한` },
@@ -920,6 +928,7 @@ function openDateCalcModal() {
 function closeDateCalcModal() {
     document.getElementById('dateCalcModal').style.display = 'none';
 }
+
 
 function calculateDays() {
     const startDateInput = document.getElementById('day-start-date');
@@ -1384,13 +1393,19 @@ function calculate() {
 
     let cumStoreDisplay = 0, cumStoreCompare = 0, cumUnlocked = 0, rows = '';
     
-    const unlockedPayDisplay = calculateEffectivePlanFee(inputs.unlockedPlan, 'SKT', 'none', inputs.unlockedWelfare, 'none', 1, inputs.unlockedContract, 'none', true);
-    cumUnlocked = inputs.unlockedDevice;
+    // ★★★ 일할계산 로직 수정 ★★★
+    const today = new Date(); // 실시간 현재 날짜
+    const totalDaysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const daysRemaining = totalDaysInMonth - today.getDate() + 1;
+    const prorationFactor = daysRemaining / totalDaysInMonth;
+    document.getElementById('proration-info').innerText = `* 첫 달 요금은 ${today.getMonth() + 1}월 ${today.getDate()}일 기준으로 남은 ${daysRemaining}일 만큼 일할 계산되었습니다.`;
+
 
     for (let m = 1; m <= duration; m++) {
         const basePlanFee = m <= actualMaintenanceMonths ? inputs.plan6m : inputs.planAfter6m;
         const finalStorePlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, m, false, inputs.premierDiscount, false);
-        
+        const unlockedPayDisplayFull = calculateEffectivePlanFee(inputs.unlockedPlan, 'SKT', 'none', inputs.unlockedWelfare, 'none', 1, inputs.unlockedContract, 'none', true);
+
         let extraThisMonth = 0;
         const actualExtraMonths = inputs.extraMode === 'custom' ? inputs.customExtraMonths : (inputs.extraMode.includes('months') ? parseInt(inputs.extraMode) : 0);
         if ((inputs.extraMode !== 'none' && m <= actualExtraMonths) || inputs.extraMode === 'monthly') {
@@ -1398,6 +1413,13 @@ function calculate() {
         }
         
         let storePayDisplay = finalStorePlanFee + storeDeviceMonth + extraThisMonth;
+        let unlockedPayDisplay = unlockedPayDisplayFull;
+
+        if (m === 1) {
+            storePayDisplay *= prorationFactor;
+            unlockedPayDisplay *= prorationFactor;
+        }
+
         let storePayRaw = storePayDisplay;
         if (m === 1) {
             if (inputs.paymentMethod === 'lump_sum') storePayRaw += deviceCost;
@@ -1405,9 +1427,10 @@ function calculate() {
         }
         cumStoreDisplay += storePayDisplay;
         cumStoreCompare += storePayRaw;
-        cumUnlocked += unlockedPayDisplay;
+        cumUnlocked += (m === 1 ? inputs.unlockedDevice : 0) + unlockedPayDisplay;
         
-        rows += `<tr><td>${m}</td><td>${format(storePayDisplay)}</td><td>${format(cumStoreDisplay)}</td><td>${format(unlockedPayDisplay)}</td><td>${format(cumUnlocked)}</td></tr>`;
+        const monthLabel = m === 1 ? `1개월차 <span class="tooltip-icon">(일할)<span class="tooltip-text">일할계산으로 오늘자기준입니다</span></span>` : `${m}개월차`;
+        rows += `<tr><td>${monthLabel}</td><td>${format(storePayDisplay)}</td><td>${format(cumStoreDisplay)}</td><td>${format(unlockedPayDisplay)}</td><td>${format(cumUnlocked)}</td></tr>`;
     }
 
     // ★★★ 할인 내역 생성 로직 수정 ★★★
@@ -1502,6 +1525,13 @@ function calculateGongsiVsSeonyak() {
     let deviceMonthSeonyak = inputs.paymentMethod === 'installment' ? calcInstallment(deviceCostSeonyak) : 0;
     const duration = 24;
     document.getElementById('result-title').innerText = `📊 최종 비교 결과 (${duration}개월)`;
+    
+    // ★★★ 일할계산 로직 수정 ★★★
+    const today = new Date(); // 실시간 현재 날짜
+    const totalDaysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const daysRemaining = totalDaysInMonth - today.getDate() + 1;
+    const prorationFactor = daysRemaining / totalDaysInMonth;
+    document.getElementById('proration-info').innerText = `* 첫 달 요금은 ${today.getMonth() + 1}월 ${today.getDate()}일 기준으로 남은 ${daysRemaining}일 만큼 일할 계산되었습니다.`;
 
     let cumGongsiDisplay = 0, cumGongsiCompare = 0, cumSeonyakDisplay = 0, cumSeonyakCompare = 0, rows = '';
 
@@ -1515,19 +1545,27 @@ function calculateGongsiVsSeonyak() {
 
         let finalGongsiPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, m, false, inputs.premierDiscount, false);
         let gongsiPayDisplay = finalGongsiPlanFee + deviceMonthGongsi + extraThisMonth;
+        
+        let finalSeonyakPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, m, true, inputs.premierDiscount, false);
+        let seonyakPayDisplay = finalSeonyakPlanFee + deviceMonthSeonyak + extraThisMonth;
+
+        if (m === 1) {
+            gongsiPayDisplay *= prorationFactor;
+            seonyakPayDisplay *= prorationFactor;
+        }
+
         let gongsiPayRaw = gongsiPayDisplay;
         if (m === 1) { if (inputs.paymentMethod === 'lump_sum') gongsiPayRaw += deviceCostGongsi; gongsiPayRaw += subsidyGongsi; }
         cumGongsiDisplay += gongsiPayDisplay;
         cumGongsiCompare += gongsiPayRaw;
 
-        let finalSeonyakPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, m, true, inputs.premierDiscount, false);
-        let seonyakPayDisplay = finalSeonyakPlanFee + deviceMonthSeonyak + extraThisMonth;
         let seonyakPayRaw = seonyakPayDisplay;
         if (m === 1) { if (inputs.paymentMethod === 'lump_sum') seonyakPayRaw += deviceCostSeonyak; seonyakPayRaw += subsidySeonyak; }
         cumSeonyakDisplay += seonyakPayDisplay;
         cumSeonyakCompare += seonyakPayRaw;
 
-        rows += `<tr><td>${m}</td><td>${format(gongsiPayDisplay)}</td><td>${format(cumGongsiDisplay)}</td><td>${format(seonyakPayDisplay)}</td><td>${format(cumSeonyakDisplay)}</td></tr>`;
+        const monthLabel = m === 1 ? `1개월차 <span class="tooltip-icon">(일할)<span class="tooltip-text">일할계산으로 오늘자기준입니다</span></span>` : `${m}개월차`;
+        rows += `<tr><td>${monthLabel}</td><td>${format(gongsiPayDisplay)}</td><td>${format(cumGongsiDisplay)}</td><td>${format(seonyakPayDisplay)}</td><td>${format(cumSeonyakDisplay)}</td></tr>`;
     }
     
     // ★★★ 할인 내역 생성 및 표시 ★★★
@@ -1628,6 +1666,13 @@ function calculateSingleMode(isGongsi) {
     const duration = 24;
     document.getElementById('result-title').innerText = `📊 ${isGongsi ? '공시지원' : '선택약정'} 단독 계산 결과 (${duration}개월)`;
 
+    // ★★★ 일할계산 로직 수정 ★★★
+    const today = new Date(); // 실시간 현재 날짜
+    const totalDaysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const daysRemaining = totalDaysInMonth - today.getDate() + 1;
+    const prorationFactor = daysRemaining / totalDaysInMonth;
+    document.getElementById('proration-info').innerText = `* 첫 달 요금은 ${today.getMonth() + 1}월 ${today.getDate()}일 기준으로 남은 ${daysRemaining}일 만큼 일할 계산되었습니다.`;
+
     let cumDisplay = 0, cumCompare = 0, rows = '';
 
     for (let m = 1; m <= duration; m++) {
@@ -1641,12 +1686,18 @@ function calculateSingleMode(isGongsi) {
         const finalPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, m, !isGongsi, inputs.premierDiscount, false);
         
         let payDisplay = finalPlanFee + deviceMonth + extraThisMonth;
+        
+        if (m === 1) {
+            payDisplay *= prorationFactor;
+        }
+
         let payRaw = payDisplay;
         if (m === 1) { if (inputs.paymentMethod === 'lump_sum') payRaw += deviceCost; payRaw += deviceSubsidy; }
         cumDisplay += payDisplay;
         cumCompare += payRaw;
         
-        rows += `<tr><td>${m}</td><td>${format(payDisplay)}</td><td>${format(cumDisplay)}</td></tr>`;
+        const monthLabel = m === 1 ? `1개월차 <span class="tooltip-icon">(일할)<span class="tooltip-text">일할계산으로 오늘자기준입니다</span></span>` : `${m}개월차`;
+        rows += `<tr><td>${monthLabel}</td><td>${format(payDisplay)}</td><td>${format(cumDisplay)}</td></tr>`;
     }
 
     // ★★★ 할인 내역 생성 및 표시 ★★★
