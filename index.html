@@ -835,7 +835,7 @@ const planData = {
         { name: 'ZEM플랜 스마트', price: 19800, description: `📞 60분 ✉️ 무제한 📶 1.5GB\n\n 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 SKT 망내 지정 2회선 무제한 (그 외 600분 소진 시 차단, 충전 후 이용 가능)\n\n잼(ZEM) 이용 Data 무료 제공\n\n청소년 안심팩 기본 제공` },
         { name: 'ZEM플랜 베스트', price: 26000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n기본 데이터 3GB 소진 시 400Kbps 속도 무제한\n(기본 데이터 소진 후 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
         { name: '5G ZEM 플랜 베스트', price: 26000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n  만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n기본 데이터 3GB 소진 시 400Kbps 속도 무제한\n(기본 데이터 소진 후 사용 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
-        { name: 'LTE 0틴 플랜 스몰', price: 33000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 18세 이하 가입 가능\n(25년도 기준 06년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n심야 사용 데이터(0시 ~ 오전 7시) 75% 할인\n\n기본 데이터 2.5GB 소진 시 400Kbps 속도 무제한` },
+        { name: 'LTE 0틴 플랜 스몰', price: 33000, description: `📞 무제한 ✉️ 무제한   무제한\n\n🔹 만 18세 이하 가입 가능\n(25년도 기준 06년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n심야 사용 데이터(0시 ~ 오전 7시) 75% 할인\n\n기본 데이터 2.5GB 소진 시 400Kbps 속도 무제한` },
         { name: '5G ZEM 플랜 퍼펙트', price: 36000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 1Mbps 속도 무제한\n(기본 데이터 소진 후 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
         { name: '5G컴팩트', price: 39000, description: `📞 무제한 ✉️ 무제한 📶 6GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G컴팩트플러스', price: 45000, description: `📞 무제한 ✉️ 무제한 📶 8GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 8GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
@@ -1920,7 +1920,14 @@ async function shareResultTable() {
             });
             errorMessageDiv.innerText = '';
         } else {
-            errorMessageDiv.innerText = '웹 공유 API를 지원하지 않는 브라우저입니다.';
+             // Fallback for browsers that don't support Web Share API
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '요금계산_결과.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            errorMessageDiv.innerText = '웹 공유를 지원하지 않아 이미지 파일로 다운로드했습니다. 갤러리(또는 다운로드 폴더)에서 확인 후 직접 공유해주세요.';
         }
     } catch (error) {
         console.error('공유 이미지 생성 실패:', error);
@@ -2035,3 +2042,4 @@ window.onload = function() {
 </script>
 </body>
 </html>
+ 
