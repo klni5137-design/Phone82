@@ -522,11 +522,11 @@
         </div>
         <div class="input-group" id="gongsiDevicePriceGroup">
             <label id="gongsiDevicePriceLabel">기기 구매가 (공시지원)<span class="tooltip-icon">(?)<span class="tooltip-text">실제 구매한 단말기 할부금을 입력하세요. 페이백일 경우 -숫자를 입력하세요.</span></span></label>
-            <input type="number" id="storeDevicePrice" value="0">
+            <input type="text" inputmode="numeric" class="number-input" id="storeDevicePrice" value="0">
         </div>
         <div class="input-group" id="seonyakDevicePriceGroup" style="display: none;">
             <label>기기 구매가 (선택약정)<span class="tooltip-icon">(?)<span class="tooltip-text">실제 구매한 단말기 할부금을 입력하세요. 페이백일 경우 -숫자를 입력하세요.</span></span></label>
-            <input type="number" id="seonyakDevicePrice" value="0">
+            <input type="text" inputmode="numeric" class="number-input" id="seonyakDevicePrice" value="0">
         </div>
         <div class="input-group" id="paymentMethodGroup">
             <label>기기값 납부 방식<span class="tooltip-icon">(?)<span class="tooltip-text">기기값 납부 방식을 선택하세요. 일시불 또는 24개월 할부(5.9%) 중 선택할 수 있습니다.</span></span></label>
@@ -537,7 +537,7 @@
         </div>
         <div class="input-group">
             <label>초기 요금제<span class="tooltip-icon">(?)<span class="tooltip-text">기간 내에 사용하는 요금제를 입력해주세요.</span></span></label>
-            <input type="number" id="storePlan6m" value="0">
+            <input type="text" inputmode="numeric" class="number-input" id="storePlan6m" value="0">
             <div class="info-box-red">초기 요금제는 10,000원 ~ 130,000원 사이로 입력하세요.</div>
         </div>
         <div class="input-group">
@@ -554,11 +554,11 @@
         </div>
         <div class="input-group">
             <label>유지 기간 이후 요금제<span class="tooltip-icon">(?)<span class="tooltip-text">원하는 요금제를 입력하세요.</span></span></label>
-            <input type="number" id="storePlanAfter6m" value="0">
+            <input type="text" inputmode="numeric" class="number-input" id="storePlanAfter6m" value="0">
         </div>
         <div class="input-group">
             <label>부가서비스 금액<span class="tooltip-icon">(?)<span class="tooltip-text">부가서비스를 이용하는 금액 총액을 입력해주세요.</span></span></label>
-            <input type="number" id="storeExtraService" value="0">
+            <input type="text" inputmode="numeric" class="number-input" id="storeExtraService" value="0">
         </div>
         <div class="input-group">
             <label>부가서비스 납부 개월수<span class="tooltip-icon">(?)<span class="tooltip-text">부가서비스 유지하는 기간을 입력해주세요.</span></span></label>
@@ -664,11 +664,11 @@
         </div>
         <div class="input-group">
             <label>기기 구매가<span class="tooltip-icon">(?)<span class="tooltip-text">자급제 구매하는 금액을 입력하세요.</span></span></label>
-            <input type="number" id="unlockedDevicePrice" value="0">
+            <input type="text" inputmode="numeric" class="number-input" id="unlockedDevicePrice" value="0">
         </div>
         <div class="input-group">
             <label>사용 요금제<span class="tooltip-icon">(?)<span class="tooltip-text">사용 중이신 요금제 혹은 생각하시는 요금제를 입력하세요.</span></span></label>
-            <input type="number" id="unlockedPlan" value="0">
+            <input type="text" inputmode="numeric" class="number-input" id="unlockedPlan" value="0">
         </div>
         <div class="input-group info-box">
             자급제는 일시불 구매이기에 할부 적용이 되지 않습니다.<br>카드 할부는 카드사에 별도로 문의하세요.
@@ -715,28 +715,28 @@
             <h3>공시지원 위약금</h3>
             <div class="input-group">
                 <label>받은 공시지원금<span class="tooltip-icon">(?)<span class="tooltip-text">공시지원금은 각 통신사별 홈페이지에서 확인 가능합니다. 개통한 날짜에 공시지원금을 확인해주세요.</span></span></label>
-                <input type="number" id="penaltyGongsiReceived" value="0">
+                <input type="text" inputmode="numeric" class="number-input" id="penaltyGongsiReceived" value="0">
             </div>
         </div>
         <div class="section">
             <h3>선택약정할인 25%할인 24개월약정</h3>
             <div class="input-group">
                 <label>요금제 (25% 할인 전)<span class="tooltip-icon">(?)<span class="tooltip-text">요금할인 25%할인을 2년 중 해지 시 위약금을 확인합니다.</span></span></label>
-                <input type="number" id="penaltySeonyak24PlanFee" value="0">
+                <input type="text" inputmode="numeric" class="number-input" id="penaltySeonyak24PlanFee" value="0">
             </div>
         </div>
         <div class="section">
             <h3>선택약정할인 25%할인 12개월약정</h3>
             <div class="input-group">
                 <label>요금제 (25% 할인 전)<span class="tooltip-icon">(?)<span class="tooltip-text">요금할인 25%할인을 1년 중 해지 시 위약금을 확인합니다.</span></span></label>
-                <input type="number" id="penaltySeonyak12PlanFee" value="0">
+                <input type="text" inputmode="numeric" class="number-input" id="penaltySeonyak12PlanFee" value="0">
             </div>
         </div>
         <div class="section">
             <h3>추가지원금 위약금</h3>
             <div class="input-group">
                 <label>추가지원 들어간 금액<span class="tooltip-icon">(?)<span class="tooltip-text">매장 혹은 온라인 구매 시 추가지원금이 위약금으로 해당되며 이 또한 계산합니다.</span></span></label>
-                <input type="number" id="penaltyAdditionalAmount" value="0">
+                <input type="text" inputmode="numeric" class="number-input" id="penaltyAdditionalAmount" value="0">
             </div>
         </div>
     </div>
@@ -962,7 +962,7 @@ const planData = {
         { name: 'ZEM플랜 스마트', price: 19800, description: `📞 60분 ✉️ 무제한 📶 1.5GB\n\n 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 SKT 망내 지정 2회선 무제한 (그 외 600분 소진 시 차단, 충전 후 이용 가능)\n\n잼(ZEM) 이용 Data 무료 제공\n\n청소년 안심팩 기본 제공` },
         { name: 'ZEM플랜 베스트', price: 26000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n기본 데이터 3GB 소진 시 400Kbps 속도 무제한\n(기본 데이터 소진 후 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
         { name: '5G ZEM 플랜 베스트', price: 26000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n  만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n기본 데이터 3GB 소진 시 400Kbps 속도 무제한\n(기본 데이터 소진 후 사용 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
-        { name: 'LTE 0틴 플랜 스몰', price: 33000, description: `📞 무제한 ✉️ 무제한    무제한\n\n🔹 만 18세 이하 가입 가능\n(25년도 기준 06년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n심야 사용 데이터(0시 ~ 오전 7시) 75% 할인\n\n기본 데이터 2.5GB 소진 시 400Kbps 속도 무제한` },
+        { name: 'LTE 0틴 플랜 스몰', price: 33000, description: `  무제한 ✉️ 무제한    무제한\n\n🔹 만 18세 이하 가입 가능\n(25년도 기준 06년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n심야 사용 데이터(0시 ~ 오전 7시) 75% 할인\n\n기본 데이터 2.5GB 소진 시 400Kbps 속도 무제한` },
         { name: '5G ZEM 플랜 퍼펙트', price: 36000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 1Mbps 속도 무제한\n(기본 데이터 소진 후 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
         { name: '5G컴팩트', price: 39000, description: `📞 무제한 ✉️ 무제한 📶 6GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G컴팩트플러스', price: 45000, description: `📞 무제한 ✉️ 무제한 📶 8GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 8GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
@@ -974,7 +974,7 @@ const planData = {
         { name: '5G베이직플러스 (54GB)', price: 64000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 30GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 30GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G 레귤러', price: 66000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 50GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 50GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G베이직플러스 (99GB)', price: 68000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 75GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 75GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
-        { name: '5G 스탠다드', price: 69000, description: `  무제한 ✉️ 무제한 📶 110GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 110GB 소진 시 5Mbps 속도 무제한\n\n기본 제공 데이터에서 48GB까지 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G 스탠다드', price: 69000, description: `📞 무제한 ✉️ 무제한 📶 110GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 110GB 소진 시 5Mbps 속도 무제한\n\n기본 제공 데이터에서 48GB까지 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G 레귤러플러스', price: 79000, description: `📞 무제한 ✉️ 무제한 📶 250GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 250GB 소진 시 5Mbps 속도 무제한\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 1회선 제공)` },
         { name: '5G 프라임', price: 89000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n데이터 완전 무제한\n\n기본 제공 데이터에서 60GB까지 테더링 및 데이터 선물, 함께 쓰기 등 공유 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 1회선 제공)\n\n구독상품 3개 중 택 1 할인 제공` },
         { name: '5G 프라임플러스', price: 99000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n데이터 완전 무제한\n\n기본 제공 데이터에서 80GB까지 테더링 및 데이터 선물, 함께 쓰기 등 공유 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 2회선 제공)\n\nT우주/넷플/웨이브/플로 선택 필수` },
@@ -1478,15 +1478,15 @@ function calculateEffectivePlanFee(basePlanFee, carrier, storeContractDuration, 
 function getInputs() {
     return {
         carrier: document.getElementById('carrier').value,
-        storeDevice: +document.getElementById('storeDevicePrice').value,
-        seonyakDevice: +document.getElementById('seonyakDevicePrice').value,
+        storeDevice: parseFormattedNumber(document.getElementById('storeDevicePrice').value),
+        seonyakDevice: parseFormattedNumber(document.getElementById('seonyakDevicePrice').value),
         paymentMethod: document.getElementById('storePaymentMethod').value,
-        plan6m: +document.getElementById('storePlan6m').value,
+        plan6m: parseFormattedNumber(document.getElementById('storePlan6m').value),
         maintenanceMode: document.getElementById('storePlanMaintenanceMode').value,
         customMaintenanceMonths: +document.getElementById('customMaintenanceMonths').value,
-        planAfter6m: +document.getElementById('storePlanAfter6m').value,
+        planAfter6m: parseFormattedNumber(document.getElementById('storePlanAfter6m').value),
         welfareDiscount: document.getElementById('storeWelfareDiscount').value,
-        extraService: +document.getElementById('storeExtraService').value,
+        extraService: parseFormattedNumber(document.getElementById('storeExtraService').value),
         extraMode: document.getElementById('storeExtraMode').value,
         customExtraMonths: +document.getElementById('customExtraMonths').value,
         contractDuration: document.getElementById('storeContractDuration').value,
@@ -1494,8 +1494,8 @@ function getInputs() {
         premierDiscount: document.getElementById('premierContractDiscount').value,
         gongsiPostSeonyak: document.getElementById('gongsiPostSeonyakSelect').value,
         
-        unlockedDevice: +document.getElementById('unlockedDevicePrice').value,
-        unlockedPlan: +document.getElementById('unlockedPlan').value,
+        unlockedDevice: parseFormattedNumber(document.getElementById('unlockedDevicePrice').value),
+        unlockedPlan: parseFormattedNumber(document.getElementById('unlockedPlan').value),
         unlockedWelfare: document.getElementById('unlockedWelfareDiscount').value,
         unlockedContract: document.getElementById('unlockedContractDiscount').checked,
         
@@ -1930,10 +1930,10 @@ function calculateAllPenaltiesInTable() {
     const errorMessageDiv = document.getElementById('error-message');
     errorMessageDiv.innerText = '';
 
-    const gongsiReceived = +document.getElementById('penaltyGongsiReceived').value;
-    const seonyak24PlanFee = +document.getElementById('penaltySeonyak24PlanFee').value;
-    const seonyak12PlanFee = +document.getElementById('penaltySeonyak12PlanFee').value;
-    const additionalAmount = +document.getElementById('penaltyAdditionalAmount').value;
+    const gongsiReceived = parseFormattedNumber(document.getElementById('penaltyGongsiReceived').value);
+    const seonyak24PlanFee = parseFormattedNumber(document.getElementById('penaltySeonyak24PlanFee').value);
+    const seonyak12PlanFee = parseFormattedNumber(document.getElementById('penaltySeonyak12PlanFee').value);
+    const additionalAmount = parseFormattedNumber(document.getElementById('penaltyAdditionalAmount').value);
 
     const penaltyMonthlyResultsBody = document.getElementById('penaltyMonthlyResults');
     penaltyMonthlyResultsBody.innerHTML = '';
@@ -2101,7 +2101,7 @@ async function shareResultTable() {
 
 
 function resetCalculator() {
-    document.querySelectorAll('#main-calculator-content-wrapper input[type="number"]').forEach(input => input.value = '0');
+    document.querySelectorAll('.number-input').forEach(input => input.value = '0');
     document.querySelectorAll('#main-calculator-content-wrapper select').forEach(select => select.selectedIndex = 0);
     document.getElementById('unlockedContractDiscount').checked = true;
     document.getElementById('modeStoreVsUnlocked').checked = true;
@@ -2185,6 +2185,31 @@ function setPCLayout() {
     document.getElementById('mobileViewBtn').classList.remove('active');
 }
 
+// ★★★ 숫자 자동 콤마 포맷팅 함수 ★★★
+function applyNumberFormatting() {
+    document.querySelectorAll('.number-input').forEach(input => {
+        input.addEventListener('keyup', function(e) {
+            let value = e.target.value;
+            let num = parseFormattedNumber(value);
+            if (isNaN(num)) {
+                e.target.value = '';
+            } else {
+                // 페이백(-) 입력 허용
+                let isNegative = value.startsWith('-');
+                e.target.value = (isNegative ? '-' : '') + Math.abs(num).toLocaleString('ko-KR');
+            }
+        });
+    });
+}
+
+function parseFormattedNumber(value) {
+    if (typeof value !== 'string') {
+        return value || 0;
+    }
+    return Number(value.replace(/,/g, '')) || 0;
+}
+
+
 window.onload = function() {
     // ★★★ 공지사항 모달 표시 로직 ★★★
     const hideUntil = localStorage.getItem('hideNoticeUntil');
@@ -2192,6 +2217,7 @@ window.onload = function() {
         document.getElementById('noticeModal').style.display = 'block';
     }
 
+    applyNumberFormatting(); // ★★★ 추가
     updatePlanList();
     toggleMaintenanceMonthsInput();
     toggleCustomMonthsInput();
