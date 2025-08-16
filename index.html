@@ -576,10 +576,18 @@
           </div>
         <div class="input-group">
             <label>선택약정 할인 (25%)<span class="tooltip-icon">(?)<span class="tooltip-text">공시지원금으로 진행할경우 SK와 U+는 19개월차부터 선택약정(25%가)이 가능하며 KT는 25개월차에 선택이 가능합니다.</span></span></label>
-            <select id="storeContractDuration">
+            <select id="storeContractDuration" onchange="toggleGongsiPostSeonyakOption()">
                 <option value="none">선택 안함</option>
                 <option value="12">12개월</option>
                 <option value="24">24개월</option>
+            </select>
+        </div>
+        <!-- ★★★ 19개월차 선택약정 옵션 추가 ★★★ -->
+        <div class="input-group" id="gongsiPostSeonyakGroup" style="display: none;">
+            <label>19개월차 요금할인 설정<span class="tooltip-icon">(?)<span class="tooltip-text">공시지원으로 개통 후 19개월차부터 선택약정 할인을 적용할지 선택합니다. (SKT, LGU만 해당)</span></span></label>
+            <select id="gongsiPostSeonyakSelect">
+                <option value="N">N (적용 안함)</option>
+                <option value="Y">Y (적용)</option>
             </select>
         </div>
         <div class="input-group">
@@ -956,7 +964,7 @@ const planData = {
         { name: '5G ZEM 플랜 베스트', price: 26000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n  만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n기본 데이터 3GB 소진 시 400Kbps 속도 무제한\n(기본 데이터 소진 후 사용 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
         { name: 'LTE 0틴 플랜 스몰', price: 33000, description: `📞 무제한 ✉️ 무제한    무제한\n\n🔹 만 18세 이하 가입 가능\n(25년도 기준 06년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 100분 제공\n\n심야 사용 데이터(0시 ~ 오전 7시) 75% 할인\n\n기본 데이터 2.5GB 소진 시 400Kbps 속도 무제한` },
         { name: '5G ZEM 플랜 퍼펙트', price: 36000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n🔹 만 12세 이하 가입 가능\n(25년도 기준 12년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 1Mbps 속도 무제한\n(기본 데이터 소진 후 제한 설정 가능)\n\n잼(ZEM) 이용 Data 무료 제공` },
-        { name: '5G컴팩트', price: 39000, description: `  무제한 ✉️ 무제한 📶 6GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G컴팩트', price: 39000, description: `📞 무제한 ✉️ 무제한 📶 6GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 6GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G컴팩트플러스', price: 45000, description: `📞 무제한 ✉️ 무제한 📶 8GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 8GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '0틴 5G', price: 45000, description: `📞 무제한 ✉️ 무제한 📶 9GB\n\n 만 18세 이하 가입 가능\n(25년도 기준 06년생 생일 이전)\n\n음성 유/무선 무제한\n\n영상/부가 통화 300분 제공\n\n기본 데이터 9GB 소진 시 1Mbps 속도 무제한` },
         { name: '5G베이직', price: 49000, description: `📞 무제한 ✉️ 무제한    11GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 11GB 소진 시 400Kbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
@@ -966,7 +974,7 @@ const planData = {
         { name: '5G베이직플러스 (54GB)', price: 64000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 30GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 30GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G 레귤러', price: 66000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 50GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 50GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G베이직플러스 (99GB)', price: 68000, description: `📞 무제한 ✉️ 무제한 📶 24GB + 75GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 24GB + 추가 데이터 75GB 소진 시 1Mbps 속도 무제한\n\n기본 제공 데이터 한도 내에서 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
-        { name: '5G 스탠다드', price: 69000, description: `📞 무제한 ✉️ 무제한 📶 110GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 110GB 소진 시 5Mbps 속도 무제한\n\n기본 제공 데이터에서 48GB까지 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
+        { name: '5G 스탠다드', price: 69000, description: `  무제한 ✉️ 무제한 📶 110GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 110GB 소진 시 5Mbps 속도 무제한\n\n기본 제공 데이터에서 48GB까지 테더링 및 데이터 선물, 함께 쓰기, 스마트워치 및 태블릿 PC 등 공유 가능\n· 데이터 선물은 일반 2회, 결합 기준 가족 4회 가능 (1회 최대 1GB)\n· 단, 만 19세 미만 미성년자는 조건 충족 시 가족 간 선물만 가능` },
         { name: '5G 레귤러플러스', price: 79000, description: `📞 무제한 ✉️ 무제한 📶 250GB\n\n영상/부가 통화 300분 제공\n\n기본 데이터 250GB 소진 시 5Mbps 속도 무제한\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 1회선 제공)` },
         { name: '5G 프라임', price: 89000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n데이터 완전 무제한\n\n기본 제공 데이터에서 60GB까지 테더링 및 데이터 선물, 함께 쓰기 등 공유 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 1회선 제공)\n\n구독상품 3개 중 택 1 할인 제공` },
         { name: '5G 프라임플러스', price: 99000, description: `📞 무제한 ✉️ 무제한 📶 무제한\n\n영상/부가 통화 300분 제공\n\n데이터 완전 무제한\n\n기본 제공 데이터에서 80GB까지 테더링 및 데이터 선물, 함께 쓰기 등 공유 가능\n\n스마트기기/데이터쉐어링 요금 할인 제공 (휴대폰 회선당 2회선 제공)\n\nT우주/넷플/웨이브/플로 선택 필수` },
@@ -1174,6 +1182,7 @@ function updateCarrierCombinedDiscountOptions() {
         combinedDiscountSelect.innerHTML += '<option value="lgu_easy_family">참 쉬운 가족결합</option>';
         premierDiscountGroup.style.display = 'block';
     }
+    toggleGongsiPostSeonyakOption(); // ★★★ 추가
 }
 
 // ★★★ 자급제 결합할인 옵션 업데이트 함수 ★★★
@@ -1218,6 +1227,19 @@ function handleUnlockedCombinedDiscountChange() {
     document.getElementById('lguTogetherGroup-unlocked').style.display = combinedDiscountType === 'lgu_together' ? 'block' : 'none';
     document.getElementById('lguEasyFamilyGroup-unlocked').style.display = combinedDiscountType === 'lgu_easy_family' ? 'block' : 'none';
     document.getElementById('ktPremiumFamilyGroup-unlocked').style.display = combinedDiscountType === 'kt_premium_family' ? 'block' : 'none';
+}
+
+// ★★★ 19개월차 선택약정 옵션 표시/숨김 함수 ★★★
+function toggleGongsiPostSeonyakOption() {
+    const carrier = document.getElementById('carrier').value;
+    const contractDuration = document.getElementById('storeContractDuration').value;
+    const group = document.getElementById('gongsiPostSeonyakGroup');
+    
+    if ((carrier === 'SKT' || carrier === 'LGU') && contractDuration === 'none') {
+        group.style.display = 'block';
+    } else {
+        group.style.display = 'none';
+    }
 }
 
 function updatePlanList() {
@@ -1333,10 +1355,11 @@ function updateCalculationMode() {
         mainCalcButton.onclick = mode === 'gongsi_only' ? calculateGongsiOnly : calculateSeonyakOnly;
     }
     document.getElementById('result').style.display = 'none';
+    toggleGongsiPostSeonyakOption(); // ★★★ 추가
 }
 
-// ★★★ 할인 계산 로직 수정 (버그 수정) ★★★
-function calculateEffectivePlanFeeDetails(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked, unlockedParams) {
+// ★★★ 할인 계산 로직 수정 (19개월차 옵션 반영) ★★★
+function calculateEffectivePlanFeeDetails(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked, unlockedParams, gongsiPostSeonyak) {
     if (basePlanFee <= 0 || carrier === 'MVNO') {
         return { finalFee: basePlanFee, discounts: [], order: '' };
     }
@@ -1349,21 +1372,15 @@ function calculateEffectivePlanFeeDetails(basePlanFee, carrier, storeContractDur
     let applySeonyak = false;
 
     if (isUnlocked) {
-        // 자급제의 경우, isSeonyakSide는 체크박스 값에 따라 결정됩니다.
         applySeonyak = isSeonyakSide;
     } else {
-        // 매장 구매의 경우
         if (isSeonyakSide) {
-            // '공시 vs 선약' 비교 모드에서 '선택약정' 열에 해당합니다.
             applySeonyak = true;
         } else {
-            // '매장 vs 자급제' 모드의 '매장' 열 또는 '공시 vs 선약' 모드의 '공시지원' 열에 해당합니다.
             if (storeContractDuration === '24' || (storeContractDuration === '12' && month <= 12)) {
-                // 사용자가 명시적으로 선택약정을 선택한 경우
                 applySeonyak = true;
             } else if (storeContractDuration === 'none') {
-                // 공시지원으로 구매 후, 나중에 선택약정으로 전환되는 경우
-                if (((carrier === 'SKT' || carrier === 'LGU') && month >= 19) || (carrier === 'KT' && month >= 25)) {
+                 if ((carrier === 'KT' && month >= 25) || ((carrier === 'SKT' || carrier === 'LGU') && month >= 19 && gongsiPostSeonyak === 'Y')) {
                     applySeonyak = true;
                 }
             }
@@ -1453,8 +1470,8 @@ function calculateEffectivePlanFeeDetails(basePlanFee, carrier, storeContractDur
     return { finalFee: Math.max(0, Math.round(finalFee)), discounts: discounts, order: appliedOrder.join(' → ') };
 }
 
-function calculateEffectivePlanFee(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked, unlockedParams) {
-    return calculateEffectivePlanFeeDetails(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked, unlockedParams).finalFee;
+function calculateEffectivePlanFee(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked, unlockedParams, gongsiPostSeonyak) {
+    return calculateEffectivePlanFeeDetails(basePlanFee, carrier, storeContractDuration, welfareDiscount, combinedDiscountType, month, isSeonyakSide, premierContractDiscount, isUnlocked, unlockedParams, gongsiPostSeonyak).finalFee;
 }
 
 
@@ -1475,13 +1492,13 @@ function getInputs() {
         contractDuration: document.getElementById('storeContractDuration').value,
         combinedDiscount: document.getElementById('combinedDiscountType').value,
         premierDiscount: document.getElementById('premierContractDiscount').value,
+        gongsiPostSeonyak: document.getElementById('gongsiPostSeonyakSelect').value,
         
         unlockedDevice: +document.getElementById('unlockedDevicePrice').value,
         unlockedPlan: +document.getElementById('unlockedPlan').value,
         unlockedWelfare: document.getElementById('unlockedWelfareDiscount').value,
         unlockedContract: document.getElementById('unlockedContractDiscount').checked,
         
-        // ★★★ 자급제 신규 입력값 추가 ★★★
         unlockedRealCarrier: document.getElementById('unlockedRealCarrier').value,
         unlockedCombinedDiscount: document.getElementById('unlockedCombinedDiscountType').value,
         unlockedKtPremiumRole: document.querySelector('input[name="ktPremiumRole-unlocked"]:checked')?.value,
@@ -1550,11 +1567,11 @@ function calculate() {
         ktInternetSpeed: inputs.unlockedKtInternetSpeed,
         lguTogetherCount: inputs.unlockedLguTogetherCount,
         lguEasyFamilyCount: inputs.unlockedLguEasyFamilyCount,
-    });
+    }, null);
 
     for (let m = 1; m <= duration; m++) {
         const basePlanFee = m <= actualMaintenanceMonths ? inputs.plan6m : inputs.planAfter6m;
-        const finalStorePlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, m, false, inputs.premierDiscount, false);
+        const finalStorePlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, m, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak);
         let unlockedPayDisplay = unlockedFeeDetails.finalFee;
 
         let extraThisMonth = 0;
@@ -1590,7 +1607,7 @@ function calculate() {
 
     storePeriods.push({
         periodTitle: `초기 유지 기간 (1~${actualMaintenanceMonths}개월)`,
-        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, 1, false, inputs.premierDiscount, false),
+        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, 1, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
         fee: inputs.plan6m
     });
 
@@ -1598,19 +1615,19 @@ function calculate() {
         if (midPeriodStart < 19) {
             storePeriods.push({
                 periodTitle: `중간 기간 (${midPeriodStart}~18개월)`,
-                details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false),
+                details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
                 fee: inputs.planAfter6m
             });
         }
         storePeriods.push({
             periodTitle: `선택약정 전환 기간 (19~24개월)`,
-            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false),
+            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
             fee: inputs.planAfter6m
         });
     } else {
         storePeriods.push({
             periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`,
-            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false),
+            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, inputs.contractDuration, inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
             fee: inputs.planAfter6m
         });
     }
@@ -1686,10 +1703,10 @@ function calculateGongsiVsSeonyak() {
             extraThisMonth = inputs.extraService;
         }
 
-        let finalGongsiPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, m, false, inputs.premierDiscount, false);
+        let finalGongsiPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, m, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak);
         let gongsiPayDisplay = finalGongsiPlanFee + deviceMonthGongsi + extraThisMonth;
         
-        let finalSeonyakPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, m, true, inputs.premierDiscount, false);
+        let finalSeonyakPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, m, true, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak);
         let seonyakPayDisplay = finalSeonyakPlanFee + deviceMonthSeonyak + extraThisMonth;
 
         if (m === 1) {
@@ -1718,28 +1735,28 @@ function calculateGongsiVsSeonyak() {
     const gongsiPeriods = [];
     gongsiPeriods.push({
         periodTitle: `초기 유지 기간 (1~${actualMaintenanceMonths}개월)`,
-        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 1, false, inputs.premierDiscount, false),
+        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 1, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
         fee: inputs.plan6m
     });
     if ((inputs.carrier === 'SKT' || inputs.carrier === 'LGU')) {
         if (midPeriodStart < 19) {
-            gongsiPeriods.push({ periodTitle: `중간 기간 (${midPeriodStart}~18개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+            gongsiPeriods.push({ periodTitle: `중간 기간 (${midPeriodStart}~18개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak), fee: inputs.planAfter6m });
         }
-        gongsiPeriods.push({ periodTitle: `선택약정 전환 기간 (19~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+        gongsiPeriods.push({ periodTitle: `선택약정 전환 기간 (19~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak), fee: inputs.planAfter6m });
     } else { // KT
-        gongsiPeriods.push({ periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+        gongsiPeriods.push({ periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak), fee: inputs.planAfter6m });
     }
     breakdownHTML += generateDiscountBreakdownHTML('공시지원', gongsiPeriods);
 
     const seonyakPeriods = [];
     seonyakPeriods.push({
         periodTitle: `초기 유지 기간 (1~${actualMaintenanceMonths}개월)`,
-        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, 1, true, inputs.premierDiscount, false),
+        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, 1, true, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
         fee: inputs.plan6m
     });
     seonyakPeriods.push({
         periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`,
-        details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, true, inputs.premierDiscount, false),
+        details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, '24', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, true, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
         fee: inputs.planAfter6m
     });
     breakdownHTML += generateDiscountBreakdownHTML('선택약정', seonyakPeriods);
@@ -1820,7 +1837,7 @@ function calculateSingleMode(isGongsi) {
             extraThisMonth = inputs.extraService;
         }
         
-        const finalPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, m, !isGongsi, inputs.premierDiscount, false);
+        const finalPlanFee = calculateEffectivePlanFee(basePlanFee, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, m, !isGongsi, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak);
         
         let payDisplay = finalPlanFee + deviceMonth + extraThisMonth;
         
@@ -1843,19 +1860,19 @@ function calculateSingleMode(isGongsi) {
 
     periods.push({
         periodTitle: `초기 유지 기간 (1~${actualMaintenanceMonths}개월)`,
-        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, 1, !isGongsi, inputs.premierDiscount, false),
+        details: calculateEffectivePlanFeeDetails(inputs.plan6m, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, 1, !isGongsi, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
         fee: inputs.plan6m
     });
 
     if (isGongsi && (inputs.carrier === 'SKT' || inputs.carrier === 'LGU')) {
         if (midPeriodStart < 19) {
-            periods.push({ periodTitle: `중간 기간 (${midPeriodStart}~18개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+            periods.push({ periodTitle: `중간 기간 (${midPeriodStart}~18개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak), fee: inputs.planAfter6m });
         }
-        periods.push({ periodTitle: `선택약정 전환 기간 (19~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false), fee: inputs.planAfter6m });
+        periods.push({ periodTitle: `선택약정 전환 기간 (19~24개월)`, details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, 'none', inputs.welfareDiscount, inputs.combinedDiscount, 19, false, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak), fee: inputs.planAfter6m });
     } else {
         periods.push({
             periodTitle: `유지 기간 이후 (${midPeriodStart}~24개월)`,
-            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, !isGongsi, inputs.premierDiscount, false),
+            details: calculateEffectivePlanFeeDetails(inputs.planAfter6m, inputs.carrier, isGongsi ? 'none' : '24', inputs.welfareDiscount, inputs.combinedDiscount, midPeriodStart, !isGongsi, inputs.premierDiscount, false, null, inputs.gongsiPostSeonyak),
             fee: inputs.planAfter6m
         });
     }
@@ -2093,6 +2110,7 @@ function resetCalculator() {
     document.getElementById('lguTogetherGroup').style.display = 'none';
     document.getElementById('lguEasyFamilyGroup').style.display = 'none';
     document.getElementById('ktPremiumFamilyGroup').style.display = 'none';
+    document.getElementById('gongsiPostSeonyakGroup').style.display = 'none'; // ★★★ 추가
 
     document.getElementById('penaltyGongsiReceived').value = '0';
     document.getElementById('penaltySeonyak24PlanFee').value = '0';
@@ -2181,6 +2199,7 @@ window.onload = function() {
     updateUnlockedCarrierDiscountOptions();
     updateCalculationMode();
     setMainCalculatorLayout();
+    toggleGongsiPostSeonyakOption(); // ★★★ 추가
 
     // ★★★ 푸터 내용 동적 생성 ★★★
     const footer = document.getElementById('page-footer');
